@@ -1,7 +1,7 @@
 
   # Auto Park Management Template
 
-  This is a code bundle for Auto Park Management Template. The original project is available at https://www.figma.com/design/UkQWNtJOgcvK1LLEHHygR4/Auto-Park-Management-Template.
+  This is a code bundle for Auto Park Management Template.
 
   ## Running the code
 
