@@ -1,0 +1,3808 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Parc Auto Manager – Planificare</title>
+<style>
+  :root {
+    --blue:   #2563eb;
+    --blue2:  #1d4ed8;
+    --sky:    #e0edff;
+    --green:  #16a34a;
+    --amber:  #d97706;
+    --red:    #dc2626;
+    --purple: #7c3aed;
+    --slate:  #64748b;
+    --dark:   #0f172a;
+    --border: #e2e8f0;
+    --bg:     #f8fafc;
+    --white:  #ffffff;
+    --text:   #1e293b;
+    --radius: 14px;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    scroll-behavior: smooth;
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: sticky; top: 0; z-index: 200;
+    background: rgba(255,255,255,.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 32px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  nav a {
+    flex-shrink: 0;
+    text-decoration: none;
+    color: var(--slate);
+    font-size: 13px; font-weight: 500;
+    padding: 14px 12px;
+    border-bottom: 2px solid transparent;
+    transition: color .15s, border-color .15s;
+    white-space: nowrap;
+  }
+
+  nav a:hover { color: var(--blue); }
+  nav a.on    { color: var(--blue); border-color: var(--blue); }
+
+  .nav-brand {
+    margin-right: 16px;
+    font-weight: 700; font-size: 15px;
+    color: var(--dark);
+    border-bottom: none !important;
+    padding: 14px 0 !important;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #1d4ed8 100%);
+    color: white;
+    padding: 72px 32px 56px;
+    text-align: center;
+  }
+
+  .hero .chip {
+    display: inline-block;
+    background: rgba(255,255,255,.15);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 99px;
+    font-size: 12px; letter-spacing: .06em;
+    padding: 4px 14px; margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  .hero h1 { font-size: clamp(28px,5vw,48px); font-weight: 800; line-height: 1.15; }
+  .hero p  { margin-top: 14px; opacity: .75; font-size: 16px; max-width: 560px; margin-left:auto; margin-right:auto; }
+
+  .hero-stats {
+    display: flex; justify-content: center; flex-wrap: wrap;
+    gap: 28px; margin-top: 40px;
+  }
+
+  .hero-stat { text-align: center; }
+  .hero-stat .n { font-size: 36px; font-weight: 800; }
+  .hero-stat .l { font-size: 12px; opacity: .6; margin-top: 2px; text-transform: uppercase; letter-spacing: .06em; }
+
+  /* ── WRAPPER ── */
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 56px 24px; }
+
+  /* ── SECTION HEADING ── */
+  .sh {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 28px;
+  }
+
+  .sh .ico {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: var(--sky);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+  }
+
+  .sh h2 { font-size: 22px; font-weight: 700; }
+  .sh p  { font-size: 13px; color: var(--slate); margin-top: 2px; }
+
+  /* ── DIVIDER ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 56px 0 0; }
+
+  /* ── MODULE CARDS ── */
+  .mod-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+
+  .mod-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    transition: box-shadow .2s, transform .2s;
+  }
+
+  .mod-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.08);
+    transform: translateY(-2px);
+  }
+
+  .mod-card .head {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .mod-card .emo { font-size: 28px; line-height: 1; }
+
+  .pri {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 99px; letter-spacing: .06em; text-transform: uppercase;
+  }
+  .p1  { background: #dbeafe; color: #1d4ed8; }
+  .p2  { background: #fef3c7; color: #b45309; }
+  .p3  { background: #dcfce7; color: #15803d; }
+
+  .mod-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+
+  .mod-card ul { list-style: none; }
+  .mod-card li {
+    font-size: 12.5px; color: var(--slate);
+    padding: 3px 0; display: flex; gap: 6px; align-items: baseline;
+  }
+  .mod-card li::before { content: "·"; color: var(--blue); font-weight: bold; flex-shrink: 0; }
+
+  /* ── TECH PILLS ── */
+  .tech-row { display: flex; flex-wrap: wrap; gap: 10px; }
+
+  .tech {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--white); border: 1px solid var(--border);
+    border-radius: 10px; padding: 12px 16px;
+    min-width: 140px; flex: 1;
+  }
+
+  .tech .dot {
+    width: 36px; height: 36px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; flex-shrink: 0;
+  }
+
+  .tech .name { font-weight: 700; font-size: 13px; }
+  .tech .role { font-size: 11px; color: var(--slate); margin-top: 1px; }
+
+  /* ── DB TABLE ── */
+  .db-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 12px;
+  }
+
+  .db-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .db-card .db-head {
+    background: var(--dark);
+    color: white;
+    font-size: 11px; font-weight: 700;
+    padding: 8px 12px;
+    letter-spacing: .07em; text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .db-card .db-count {
+    background: rgba(255,255,255,.15);
+    border-radius: 99px;
+    font-size: 10px; padding: 1px 6px;
+  }
+
+  .db-card .db-body { padding: 10px 12px; }
+
+  .db-field {
+    font-size: 11.5px; font-family: 'Consolas', monospace;
+    padding: 2px 0; display: flex; gap: 6px; align-items: center;
+    color: #475569;
+    border-bottom: 1px solid #f1f5f9;
+  }
+
+  .db-field:last-child { border-bottom: none; }
+
+  .db-field .lbl {
+    font-size: 9px; padding: 0 4px; border-radius: 3px;
+    font-weight: 700; flex-shrink: 0;
+  }
+
+  .lbl-pk { background: #dbeafe; color: #1d4ed8; }
+  .lbl-fk { background: #fef3c7; color: #b45309; }
+
+  .db-field.fk-field { color: var(--amber); }
+
+  /* ── FILE TREE ── */
+  .tree {
+    background: #0f172a;
+    color: #cbd5e1;
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    font-family: 'Consolas', 'Cascadia Code', monospace;
+    font-size: 13px;
+    line-height: 2;
+    overflow-x: auto;
+  }
+
+  .tree .d  { color: #7dd3fc; font-weight: 600; }
+  .tree .ph { color: #86efac; }
+  .tree .cs { color: #c084fc; }
+  .tree .js { color: #fbbf24; }
+  .tree .sq { color: #fb923c; }
+  .tree .cm { color: #475569; font-style: italic; }
+
+  /* ── FLOW ── */
+  .flow {
+    display: flex; flex-wrap: wrap; gap: 0;
+    counter-reset: step;
+    margin-bottom: 12px;
+  }
+
+  .flow-step {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    flex: 1; min-width: 200px;
+    position: relative;
+  }
+
+  .flow-step + .flow-step::before {
+    content: '→';
+    position: absolute; left: -18px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--slate); font-size: 16px;
+    background: var(--bg); padding: 0 4px;
+  }
+
+  .flow-step .num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--blue); color: white;
+    font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .flow-step h4 { font-size: 13px; font-weight: 600; }
+  .flow-step p  { font-size: 12px; color: var(--slate); margin-top: 2px; }
+
+  /* ── ALERT ROWS ── */
+  .al-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .al {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px; border-radius: 10px;
+    font-size: 13px; border: 1px solid;
+  }
+
+  .al-red    { background: #fff1f2; border-color: #fecaca; }
+  .al-amber  { background: #fffbeb; border-color: #fde68a; }
+  .al-blue   { background: #eff6ff; border-color: #bfdbfe; }
+  .al-green  { background: #f0fdf4; border-color: #bbf7d0; }
+
+  .al .al-ico { font-size: 22px; flex-shrink: 0; }
+  .al .al-txt strong { display: block; margin-bottom: 1px; }
+  .al .al-txt span   { color: var(--slate); font-size: 12px; }
+
+  .al .days {
+    margin-left: auto; flex-shrink: 0;
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px; border-radius: 99px;
+  }
+
+  .days-red    { background: #fee2e2; color: #b91c1c; }
+  .days-amber  { background: #fef3c7; color: #b45309; }
+  .days-blue   { background: #dbeafe; color: #1d4ed8; }
+
+  /* ── ROLES ── */
+  .role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+
+  .role-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px;
+  }
+
+  .role-card .r-head {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 16px;
+  }
+
+  .role-card .r-emo {
+    width: 48px; height: 48px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+
+  .role-card h3 { font-size: 16px; font-weight: 700; }
+  .role-card .r-sub { font-size: 12px; color: var(--slate); margin-top: 1px; }
+
+  .perm-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+
+  .perm-list li {
+    font-size: 13px; display: flex; align-items: center; gap: 8px; color: var(--slate);
+  }
+
+  .perm-list li .ok  { color: var(--green); font-size: 16px; }
+  .perm-list li .no  { color: #cbd5e1;      font-size: 16px; }
+
+  /* ── SUPPORT ── */
+  .sup-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .sup-card {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px 20px;
+    display: flex; flex-direction: column; gap: 10px;
+    transition: box-shadow .2s, transform .2s;
+  }
+
+  .sup-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,.07);
+    transform: translateY(-2px);
+  }
+
+  .sup-card .sc-ico {
+    width: 46px; height: 46px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; flex-shrink: 0;
+  }
+
+  .sup-card h4 { font-size: 14px; font-weight: 700; color: var(--text); }
+  .sup-card p  { font-size: 13px; color: var(--slate); line-height: 1.5; }
+  .sup-card a  { font-size: 13px; font-weight: 600; color: var(--blue); text-decoration: none; }
+  .sup-card a:hover { text-decoration: underline; }
+
+  .sup-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 600; padding: 3px 10px;
+    border-radius: 99px; width: fit-content;
+  }
+
+  .sup-badge.online  { background: #dcfce7; color: #15803d; }
+  .sup-badge.offline { background: #fee2e2; color: #b91c1c; }
+
+  /* ── AUTH MOCKUP ── */
+  .auth-frames {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  @media(max-width:820px){ .auth-frames { grid-template-columns:1fr; } }
+
+  .auth-frame-label {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: var(--slate);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+  }
+
+  /* mini browser for auth */
+  .auth-browser {
+    border-radius: 12px; border: 1px solid #cbd5e1;
+    box-shadow: 0 12px 40px rgba(0,0,0,.10); overflow: hidden;
+    background: #fff;
+  }
+
+  .auth-chrome {
+    background: #e8ecf0; padding: 8px 14px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .auth-dots { display:flex; gap:5px; }
+  .auth-dots span { width:10px; height:10px; border-radius:50%; display:block; }
+
+  .auth-url {
+    flex:1; background:#fff; border-radius:5px;
+    padding:3px 10px; font-size:11px; color:#64748b;
+    font-family:monospace; border:1px solid #d1d5db;
+  }
+
+  .auth-body {
+    background: linear-gradient(135deg, #f8fafc 0%, #e0edff 100%);
+    padding: 28px 20px;
+    display: flex; justify-content: center;
+  }
+
+  /* auth card inside browser */
+  .auth-card {
+    background: #fff; border-radius: 16px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 6px 28px rgba(37,99,235,.09);
+    width: 100%; max-width: 340px;
+    padding: 28px 26px;
+  }
+
+  .auth-card-hd {
+    text-align: center; margin-bottom: 22px;
+  }
+
+  .auth-card-ico {
+    width: 46px; height: 46px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    border-radius: 13px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; margin: 0 auto 12px;
+    box-shadow: 0 4px 14px rgba(37,99,235,.28);
+  }
+
+  .auth-card h3 {
+    font-size: 17px; font-weight: 700; color: #0f172a;
+  }
+
+  .auth-card .auth-sub {
+    font-size: 12px; color: #64748b; margin-top: 4px;
+  }
+
+  .auth-fgroup { margin-bottom: 12px; }
+
+  .auth-fgroup label {
+    display: block; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    color: #64748b; margin-bottom: 4px;
+  }
+
+  .auth-input, .auth-select {
+    width: 100%; padding: 9px 11px;
+    border: 1.5px solid #e2e8f0; border-radius: 8px;
+    font-size: 12px; color: #334155; background: #f8fafc;
+    font-family: inherit;
+  }
+
+  .auth-input:focus-within, .auth-select:focus-within {
+    border-color: #2563eb;
+  }
+
+  .auth-btn {
+    width: 100%; padding: 10px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #fff; border: none; border-radius: 8px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    box-shadow: 0 3px 12px rgba(37,99,235,.32);
+    margin-top: 4px;
+  }
+
+  .auth-link-row {
+    text-align: center; font-size: 11px; color: #64748b;
+    margin-top: 14px;
+  }
+
+  .auth-link-row a { color: #2563eb; font-weight: 600; text-decoration: none; }
+
+  .auth-remember {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11px; color: #64748b; margin: 8px 0 12px;
+  }
+
+  /* demo accounts strip */
+  .demo-strip {
+    background: #f0f7ff; border: 1px solid #bfdbfe;
+    border-radius: 10px; padding: 12px 14px; margin-top: 20px;
+  }
+
+  .demo-strip-title {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .08em; color: #2563eb; margin-bottom: 8px;
+  }
+
+  .demo-accs { display: flex; flex-direction: column; gap: 6px; }
+
+  .demo-acc {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 7px; padding: 8px 10px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .demo-acc-l { display: flex; align-items: center; gap: 8px; }
+
+  .demo-av {
+    width: 26px; height: 26px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: #fff;
+  }
+
+  .av-adm { background: linear-gradient(135deg,#7c3aed,#5b21b6); }
+  .av-usr { background: linear-gradient(135deg,#0891b2,#0e7490); }
+
+  .demo-acc-name { font-size: 11px; font-weight: 600; color: #0f172a; }
+  .demo-acc-cred { font-size: 10px; color: #94a3b8; }
+
+  .demo-role {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; padding: 2px 7px; border-radius: 99px;
+  }
+
+  .dr-adm { background: #ede9fe; color: #5b21b6; }
+  .dr-usr { background: #cffafe; color: #0e7490; }
+
+  /* access comparison table */
+  .access-table-wrap {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    margin-top: 0;
+  }
+
+  .access-table-head {
+    background: var(--dark); color: #f8fafc;
+    padding: 14px 20px; font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  table.acc-tbl {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+
+  table.acc-tbl thead th {
+    background: #f8fafc; padding: 10px 16px;
+    text-align: left; font-size: 11px; font-weight: 700;
+    color: #64748b; border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  table.acc-tbl tbody td {
+    padding: 10px 16px; border-bottom: 1px solid #f1f5f9;
+    color: #334155; vertical-align: middle;
+  }
+
+  table.acc-tbl tbody tr:last-child td { border-bottom: none; }
+  table.acc-tbl tbody tr:hover td { background: #f8fafc; }
+
+  .acc-yes { color: #16a34a; font-size: 17px; font-weight: 700; }
+  .acc-no  { color: #cbd5e1; font-size: 17px; }
+
+  /* feedback form */
+  .fb-wrap {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 32px;
+    max-width: 680px;
+  }
+
+  .fb-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+  .fb-row.full { grid-template-columns: 1fr; }
+
+  .fb-field label {
+    display: block; font-size: 11px; font-weight: 700;
+    color: var(--slate); margin-bottom: 5px;
+    text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  .fb-input, .fb-select, .fb-textarea {
+    width: 100%; padding: 10px 12px; border-radius: 8px;
+    border: 1.5px solid var(--border); font-size: 13px;
+    color: var(--text); background: var(--bg);
+    font-family: inherit;
+    transition: border-color .15s, box-shadow .15s;
+    outline: none;
+  }
+
+  .fb-input:focus, .fb-select:focus, .fb-textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+    background: var(--white);
+  }
+
+  .fb-textarea { resize: vertical; min-height: 110px; }
+
+  /* star rating */
+  .star-rating { display: flex; gap: 4px; margin-top: 6px; }
+  .star-rating span { font-size: 30px; cursor: pointer; color: #d1d5db; transition: color .1s, transform .12s; line-height: 1; user-select: none; }
+  .star-rating span:hover { transform: scale(1.2); }
+  .star-rating span.lit { color: #f59e0b; }
+  .star-rating.sm span { font-size: 20px; }
+
+  .fb-submit {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--blue); color: white;
+    padding: 11px 24px; border-radius: 8px;
+    border: none; font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: background .15s, transform .1s;
+    margin-top: 6px;
+  }
+
+  .fb-submit:hover { background: var(--blue2); transform: translateY(-1px); }
+  .fb-submit:active { transform: translateY(0); }
+
+  /* faq accordion */
+  .faq-list { display: flex; flex-direction: column; gap: 8px; }
+
+  .faq-item {
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+
+  .faq-item.open { box-shadow: 0 4px 16px rgba(0,0,0,.06); border-color: #bfdbfe; }
+
+  .faq-q {
+    width: 100%; display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; gap: 16px;
+    background: none; border: none; cursor: pointer;
+    font-size: 14px; font-weight: 600; color: var(--text);
+    text-align: left; font-family: inherit;
+    transition: background .12s;
+  }
+
+  .faq-q:hover { background: #f8fafc; }
+  .faq-item.open .faq-q { color: var(--blue); }
+
+  .faq-arrow {
+    font-size: 16px; flex-shrink: 0;
+    transition: transform .2s; color: var(--slate);
+  }
+
+  .faq-item.open .faq-arrow { transform: rotate(180deg); color: var(--blue); }
+
+  .faq-a {
+    max-height: 0; overflow: hidden;
+    transition: max-height .3s ease, padding .3s;
+    padding: 0 20px; font-size: 13.5px; color: var(--slate); line-height: 1.7;
+  }
+
+  .faq-item.open .faq-a { max-height: 300px; padding: 0 20px 16px; }
+
+  .faq-a code {
+    background: #f1f5f9; padding: 1px 6px; border-radius: 4px;
+    font-size: 12px; color: #1d4ed8; font-family: 'Consolas', monospace;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    text-align: center; padding: 32px;
+    color: var(--slate); font-size: 12px;
+    border-top: 1px solid var(--border);
+    background: var(--white);
+  }
+
+  /* ── MISC ── */
+  section { scroll-margin-top: 52px; }
+
+  .sep { height: 1px; background: var(--border); margin: 56px 0; }
+
+  /* ── VIEW TOGGLE BAR ── */
+  .mv-bar {
+    display: flex; gap: 8px; justify-content: center; margin-bottom: 24px;
+  }
+  .mv-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 9px 20px; border-radius: 8px; cursor: pointer;
+    border: 1.5px solid var(--border); background: var(--white);
+    color: var(--slate); font-size: 13px; font-weight: 600;
+    transition: all .15s;
+  }
+  .mv-btn:hover { border-color: var(--blue); color: var(--blue); }
+  .mv-btn.mvon  { background: var(--blue); color: #fff; border-color: var(--blue); box-shadow: 0 2px 8px rgba(37,99,235,.3); }
+
+  /* view container defaults: phone hidden */
+  #mv-phone { display: none; }
+
+  /* phone mode */
+  .mv-container.mode-phone #mv-web   { display: none; }
+  .mv-container.mode-phone #mv-phone { display: flex; justify-content: center; }
+
+  /* both mode */
+  .mv-container.mode-both {
+    display: flex; gap: 28px; align-items: flex-start;
+    overflow-x: auto; padding-bottom: 8px;
+  }
+  .mv-container.mode-both #mv-phone { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; zoom: .78; }
+  .mv-container.mode-both #mv-web   { flex-shrink: 0; width: 720px; zoom: .60; }
+
+  /* ── PHONE FRAME ── */
+  .mock-phone-frame {
+    width: 290px; background: #1c1c1e; border-radius: 46px;
+    padding: 14px;
+    box-shadow: 0 0 0 1px #3a3a3c, 0 0 0 3px #1c1c1e, 0 0 0 4px #48484a, 0 28px 70px rgba(0,0,0,.55);
+  }
+  .mph-dyn-island {
+    width: 108px; height: 30px; background: #1c1c1e; border-radius: 0 0 20px 20px;
+    margin: -14px auto 0; position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .mph-dyn-island::before { content:''; width:10px; height:10px; border-radius:50%; background:#2c2c2e; }
+  .mph-dyn-island::after  { content:''; width:44px; height:6px; border-radius:3px; background:#2c2c2e; }
+  .mph-screen {
+    background: #f8fafc; border-radius: 34px; overflow: hidden;
+    height: 580px; display: flex; flex-direction: column;
+  }
+  .mph-statusbar {
+    background: #0f172a; color: #f8fafc;
+    padding: 10px 18px 8px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; font-weight: 600; flex-shrink: 0;
+  }
+  .mph-topbar {
+    background: #0f172a; color: #f8fafc;
+    padding: 10px 16px 12px; display: flex; align-items: center; gap: 10px;
+    font-size: 14px; font-weight: 700; flex-shrink: 0;
+  }
+  .mph-topbar .mph-back { font-size: 16px; opacity:.7; cursor: pointer; }
+  .mph-main {
+    flex: 1; overflow-y: auto; padding: 14px;
+    scroll-behavior: smooth;
+    background: #f8fafc;
+  }
+  .mph-main::-webkit-scrollbar { width: 3px; }
+  .mph-main::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  .mph-bottomnav {
+    background: #fff; border-top: 1px solid #e2e8f0;
+    display: flex; height: 60px; flex-shrink: 0; padding: 0 2px;
+  }
+  .mph-navitem {
+    flex: 1; display: flex; flex-direction: column; align-items: center;
+    justify-content: center; gap: 2px; cursor: pointer;
+    border-radius: 8px; transition: background .12s;
+  }
+  .mph-navitem:hover { background: #f1f5f9; }
+  .mph-navitem.mn-on .mn-ico { filter: none; }
+  .mn-ico { font-size: 19px; line-height: 1; }
+  .mn-lbl { font-size: 9px; color: #94a3b8; }
+  .mph-navitem.mn-on .mn-lbl { color: #2563eb; font-weight: 700; }
+  .mph-homeind { height: 4px; width: 100px; background: #1c1c1e; border-radius: 2px; margin: 6px auto -2px; opacity:.3; }
+
+  /* phone screen panes */
+  .mph-pane { display: none; }
+  .mph-pane.mph-on { display: block; }
+
+  /* phone card UI */
+  .ph-alert {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 10px 12px; border-radius: 10px; font-size: 11.5px;
+    margin-bottom: 7px; border: 1px solid;
+  }
+  .ph-alert.pha-r { background:#fff1f2; border-color:#fca5a5; color:#991b1b; }
+  .ph-alert.pha-a { background:#fffbeb; border-color:#fcd34d; color:#92400e; }
+  .ph-alert.pha-g { background:#f0fdf4; border-color:#86efac; color:#14532d; }
+  .ph-alert .phi  { font-size:15px; flex-shrink:0; }
+
+  .ph-stats { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0; }
+  .ph-stat  { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; text-align:center; }
+  .ph-stat .psn { font-size:22px; font-weight:800; color:#1d4ed8; }
+  .ph-stat .psl { font-size:10px; color:#64748b; margin-top:3px; }
+
+  .ph-section { font-size:11px; font-weight:700; color:#0f172a; text-transform:uppercase; letter-spacing:.07em; margin:14px 0 8px; }
+
+  .ph-card { background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:12px; margin-bottom:8px; }
+  .ph-card-head { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:5px; }
+  .ph-card-title { font-size:13px; font-weight:700; color:#0f172a; }
+  .ph-card-sub   { font-size:11px; color:#64748b; margin-top:2px; }
+  .ph-card-row   { display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
+
+  .ph-btn-full { width:100%; padding:10px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; margin-top:6px; }
+  .ph-btn-ghost { padding:5px 10px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; }
+
+  .ph-field { margin-bottom:10px; }
+  .ph-field label { display:block; font-size:10px; font-weight:600; color:#64748b; margin-bottom:3px; text-transform:uppercase; }
+  .ph-input, .ph-select { width:100%; padding:8px 10px; border-radius:7px; border:1px solid #d1d5db; font-size:12px; background:#f9fafb; }
+  .ph-row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .ph-divider { height:1px; background:#f1f5f9; margin:12px 0; }
+
+  .ph-piese-row { display:flex; gap:6px; align-items:center; margin-bottom:6px; }
+  .ph-piese-row .ph-input { font-size:11px; padding:6px 8px; }
+  .ph-total-row { display:flex; justify-content:space-between; align-items:center; padding:10px 0 0; border-top:1px solid #e2e8f0; margin-top:4px; }
+  .ph-total-row .ptl { font-size:12px; color:#64748b; }
+  .ph-total-row .ptv { font-size:16px; font-weight:800; color:#1d4ed8; }
+
+  /* ══════════════ MOCKUP STYLES ══════════════ */
+  .mock-browser {
+    border-radius: 12px;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 20px 60px rgba(0,0,0,.15);
+    overflow: hidden;
+    background: #fff;
+  }
+
+  .mock-chrome {
+    background: #e8ecf0;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border-bottom: 1px solid #cbd5e1;
+  }
+
+  .mock-dots { display: flex; gap: 6px; }
+  .mock-dots span {
+    width: 12px; height: 12px; border-radius: 50%;
+    display: block;
+  }
+
+  .mock-url {
+    flex: 1; background: #fff; border-radius: 6px;
+    padding: 4px 12px; font-size: 12px; color: #64748b;
+    font-family: monospace; border: 1px solid #d1d5db;
+  }
+
+  /* app shell */
+  .mock-shell { display: flex; height: 620px; }
+
+  .mock-sb {
+    width: 200px; background: #0f172a; color: #cbd5e1;
+    display: flex; flex-direction: column; flex-shrink: 0;
+    overflow: hidden;
+  }
+
+  .mock-sb-logo {
+    padding: 16px; font-weight: 700; font-size: 14px;
+    color: #f8fafc; border-bottom: 1px solid #1e293b;
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .mock-sb-section {
+    font-size: 9px; text-transform: uppercase;
+    letter-spacing: .1em; color: #475569;
+    padding: 14px 16px 4px; font-weight: 600;
+  }
+
+  .mock-sb a {
+    display: flex; align-items: center; gap: 8px;
+    padding: 9px 16px; font-size: 12.5px; color: #94a3b8;
+    cursor: pointer; text-decoration: none;
+    border-left: 3px solid transparent;
+    transition: all .12s;
+  }
+
+  .mock-sb a:hover { color: #f1f5f9; background: #1e293b; }
+  .mock-sb a.ms-on { color: #f8fafc; background: #1e3a8a; border-left-color: #3b82f6; }
+
+  .mock-sb .ms-emo { width: 18px; text-align: center; font-size: 14px; }
+
+  /* main area */
+  .mock-main {
+    flex: 1; overflow-y: auto; background: #f8fafc;
+    padding: 20px 24px;
+  }
+
+  .ms { display: none; }
+  .ms.ms-active { display: block; }
+
+  /* page title */
+  .ms-title {
+    font-size: 18px; font-weight: 700; color: #0f172a;
+    margin-bottom: 4px;
+  }
+  .ms-sub { font-size: 12px; color: #64748b; margin-bottom: 18px; }
+
+  /* alert strip */
+  .mk-alert {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; border-radius: 8px;
+    font-size: 12px; margin-bottom: 8px;
+    border: 1px solid;
+  }
+  .mk-alert.mk-red    { background: #fff1f2; border-color: #fca5a5; color: #991b1b; }
+  .mk-alert.mk-amber  { background: #fffbeb; border-color: #fcd34d; color: #92400e; }
+  .mk-alert.mk-green  { background: #f0fdf4; border-color: #86efac; color: #14532d; }
+  .mk-alert .mk-ico   { font-size: 16px; flex-shrink: 0; }
+  .mk-alert .mk-msg   { flex: 1; }
+  .mk-alert .mk-link  {
+    font-size: 11px; font-weight: 600; padding: 3px 8px;
+    border-radius: 5px; cursor: pointer; flex-shrink: 0;
+  }
+  .mk-red .mk-link    { background: #fecaca; color: #991b1b; }
+  .mk-amber .mk-link  { background: #fde68a; color: #92400e; }
+
+  /* stat row */
+  .mk-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 10px;
+    margin: 16px 0;
+  }
+  .mk-stat {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 14px 16px;
+  }
+  .mk-stat .mk-n { font-size: 26px; font-weight: 800; color: #1d4ed8; line-height: 1; }
+  .mk-stat .mk-l { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+  /* mini table */
+  .mk-table-wrap {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; overflow: hidden; margin-top: 14px;
+  }
+
+  .mk-table-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; border-bottom: 1px solid #f1f5f9;
+  }
+
+  .mk-table-head span { font-size: 13px; font-weight: 600; color: #0f172a; }
+
+  .mk-btn {
+    font-size: 11px; font-weight: 600; padding: 5px 12px;
+    border-radius: 6px; cursor: pointer; border: none;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+
+  .mk-btn-blue { background: #2563eb; color: #fff; }
+  .mk-btn-blue:hover { background: #1d4ed8; }
+  .mk-btn-ghost { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+  .mk-btn-ghost:hover { background: #e2e8f0; }
+  .mk-btn-sm { font-size: 10px; padding: 3px 8px; }
+  .mk-btn-red { background: #fee2e2; color: #b91c1c; }
+
+  table.mkt {
+    width: 100%; border-collapse: collapse; font-size: 12px;
+  }
+
+  table.mkt thead th {
+    background: #f8fafc; padding: 8px 14px;
+    text-align: left; font-size: 11px;
+    font-weight: 600; color: #64748b;
+    border-bottom: 1px solid #e2e8f0;
+    white-space: nowrap;
+  }
+
+  table.mkt tbody td {
+    padding: 9px 14px; border-bottom: 1px solid #f1f5f9;
+    color: #334155; vertical-align: middle;
+  }
+
+  table.mkt tbody tr:last-child td { border-bottom: none; }
+  table.mkt tbody tr:hover td { background: #f8fafc; }
+
+  .mk-badge {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    border-radius: 99px; display: inline-block;
+  }
+
+  .mb-green  { background: #dcfce7; color: #15803d; }
+  .mb-red    { background: #fee2e2; color: #b91c1c; }
+  .mb-amber  { background: #fef3c7; color: #b45309; }
+  .mb-blue   { background: #dbeafe; color: #1d4ed8; }
+  .mb-purple { background: #ede9fe; color: #7c3aed; }
+  .mb-slate  { background: #f1f5f9; color: #475569; }
+
+  /* form mockup */
+  .mk-form { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 20px; }
+
+  .mk-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .mk-row3 { grid-template-columns: 1fr 1fr 1fr; }
+  .mk-row4 { grid-template-columns: 2fr 1fr 1fr 1fr; }
+
+  .mk-field label {
+    display: block; font-size: 10px; font-weight: 600;
+    color: #64748b; margin-bottom: 4px; text-transform: uppercase; letter-spacing: .05em;
+  }
+
+  .mk-input {
+    width: 100%; padding: 7px 10px; border-radius: 6px;
+    border: 1px solid #d1d5db; font-size: 12px; color: #334155;
+    background: #f9fafb;
+  }
+
+  .mk-select {
+    width: 100%; padding: 7px 10px; border-radius: 6px;
+    border: 1px solid #d1d5db; font-size: 12px; color: #334155;
+    background: #f9fafb;
+  }
+
+  .mk-divider { height: 1px; background: #f1f5f9; margin: 14px 0; }
+
+  .mk-piese-head {
+    display: grid; grid-template-columns: 2.5fr 0.7fr 0.9fr 0.9fr 60px;
+    gap: 8px; padding: 6px 0;
+    font-size: 10px; font-weight: 600; color: #64748b;
+    text-transform: uppercase; border-bottom: 1px solid #e2e8f0;
+    margin-bottom: 6px;
+  }
+
+  .mk-piese-row {
+    display: grid; grid-template-columns: 2.5fr 0.7fr 0.9fr 0.9fr 60px;
+    gap: 8px; margin-bottom: 6px; align-items: center;
+  }
+
+  .mk-piese-total {
+    display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+    padding: 12px 0 0; border-top: 1px solid #e2e8f0; margin-top: 8px;
+    font-size: 13px;
+  }
+
+  .mk-piese-total .tot-label { color: #64748b; }
+  .mk-piese-total .tot-val { font-size: 16px; font-weight: 800; color: #1d4ed8; }
+
+  .mk-actions { display: flex; gap: 8px; margin-top: 16px; justify-content: flex-end; }
+
+  /* tire cards */
+  .mk-tire-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+
+  .mk-tire-group h4 {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .07em; color: #64748b; margin-bottom: 8px;
+  }
+
+  .mk-tire-card {
+    background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px;
+    margin-bottom: 8px;
+  }
+
+  .mk-tire-card .tc-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;
+  }
+
+  .mk-tire-card .tc-name { font-size: 13px; font-weight: 600; color: #0f172a; }
+
+  .mk-tire-card .tc-info {
+    font-size: 11px; color: #64748b; display: flex; flex-direction: column; gap: 2px;
+  }
+
+  .mk-tire-card .tc-info span { display: flex; gap: 6px; align-items: center; }
+  .mk-tire-card .tc-info span::before { content: "·"; color: #94a3b8; }
+
+  /* sofer card */
+  .mk-sofer-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-top: 10px; }
+
+  .mk-sofer-card {
+    background: #fff; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: 14px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+
+  .mk-sofer-card .s-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: #dbeafe; color: #1d4ed8;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; margin-bottom: 2px;
+  }
+
+  .mk-sofer-card .s-name { font-size: 13px; font-weight: 700; color: #0f172a; }
+  .mk-sofer-card .s-info { font-size: 11px; color: #64748b; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="topnav">
+  <a class="nav-brand" href="#top">🚗 Parc Auto</a>
+  <a href="#module"    class="on">Module</a>
+  <a href="#tech">Tehnologii</a>
+  <a href="#db">Baza de Date</a>
+  <a href="#fisiere">Structura</a>
+  <a href="#fluxuri">Fluxuri</a>
+  <a href="#alerte">Alerte</a>
+  <a href="#roluri">Roluri</a>
+  <a href="#mockup">🖥️ Mockup UI</a>
+  <a href="#support">💬 Support</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="top">
+  <div class="chip">Proiect Web · 2026</div>
+  <h1>Parc Auto Manager</h1>
+  <p>Aplicație web pentru firme care gestionează mașini și oferă servicii complete de întreținere pentru mai mulți proprietari.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="n">7</div><div class="l">Module</div></div>
+    <div class="hero-stat"><div class="n">12</div><div class="l">Tabele DB</div></div>
+    <div class="hero-stat"><div class="n">5</div><div class="l">Tehnologii</div></div>
+    <div class="hero-stat"><div class="n">3</div><div class="l">Roluri</div></div>
+    <div class="hero-stat"><div class="n">5</div><div class="l">Tipuri alerte</div></div>
+  </div>
+</div>
+
+<!-- ══════════════ MODULE ══════════════ -->
+<section id="module">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">📦</div>
+    <div>
+      <h2>Module principale</h2>
+      <p>Funcționalitățile aplicației grupate pe domenii</p>
+    </div>
+  </div>
+
+  <div class="mod-grid">
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">🏠</span><span class="pri p1">P1</span></div>
+      <h3>Dashboard</h3>
+      <ul>
+        <li>Rezumat mașini și șoferi activi</li>
+        <li>Alerte expirare vizibile imediat</li>
+        <li>Ultimele intervenții service</li>
+        <li>Grafic costuri și km</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">🚗</span><span class="pri p1">P1</span></div>
+      <h3>Gestiune Mașini</h3>
+      <ul>
+        <li>Date tehnice: motor, locuri, tonaj, VIN</li>
+        <li>Kilometraj per cursă</li>
+        <li>Asociere proprietar</li>
+        <li>Istoric complet per mașină</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">👨‍✈️</span><span class="pri p1">P1</span></div>
+      <h3>Gestiune Șoferi</h3>
+      <ul>
+        <li>Date personale și de contact</li>
+        <li>Număr permis și categorii</li>
+        <li>Alertă expirare permis</li>
+        <li>Asociere mașini conduse</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">🔧</span><span class="pri p1">P1</span></div>
+      <h3>Service</h3>
+      <ul>
+        <li>Data + km la intrarea în service</li>
+        <li>Piese înlocuite cu costuri detaliate</li>
+        <li>Tipuri: revizie, reparație, accident, vopsitorie</li>
+        <li>Raport Business Analyst per mașină</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">🛡️</span><span class="pri p2">P2</span></div>
+      <h3>Asigurări</h3>
+      <ul>
+        <li>Tip: RCA / CASCO</li>
+        <li>Companie, număr poliță, preț</li>
+        <li>Alertă expirare 30/15/7 zile</li>
+        <li>Descărcare PDF poliță</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">🛣️</span><span class="pri p2">P2</span></div>
+      <h3>Viniete</h3>
+      <ul>
+        <li>Țară, tip, validitate, cost</li>
+        <li>Alertă expirare automată</li>
+        <li>Istoric roviniete per mașină</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">⚙️</span><span class="pri p2">P2</span></div>
+      <h3>Anvelope</h3>
+      <ul>
+        <li>Seturi: vară / iarnă / all-season</li>
+        <li>Anvelope sau roți complete (jante)</li>
+        <li>Data + km la fiecare schimb</li>
+        <li>Stare: montate / depozitate</li>
+      </ul>
+    </div>
+
+    <div class="mod-card">
+      <div class="head"><span class="emo">👤</span><span class="pri p3">P3</span></div>
+      <h3>Proprietari</h3>
+      <ul>
+        <li>Date contact proprietar</li>
+        <li>Lista mașini per proprietar</li>
+        <li>Sumar costuri per proprietar</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ TEHNOLOGII ══════════════ -->
+<section id="tech">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🔧</div>
+    <div>
+      <h2>Tehnologii</h2>
+      <p>Stack-ul folosit în proiect – HTML, CSS, JS, PHP, MySQL</p>
+    </div>
+  </div>
+
+  <div class="tech-row">
+    <div class="tech">
+      <div class="dot" style="background:#fff4e0">🌐</div>
+      <div><div class="name">HTML 5</div><div class="role">Structură semantică, formulare</div></div>
+    </div>
+    <div class="tech">
+      <div class="dot" style="background:#f0e8ff">🎨</div>
+      <div><div class="name">CSS 3</div><div class="role">Layout Flexbox/Grid, responsive</div></div>
+    </div>
+    <div class="tech">
+      <div class="dot" style="background:#fefce8">⚡</div>
+      <div><div class="name">JavaScript</div><div class="role">Validare, calcule automate, Fetch</div></div>
+    </div>
+    <div class="tech">
+      <div class="dot" style="background:#eef2ff">🐘</div>
+      <div><div class="name">PHP 8</div><div class="role">Backend, PDO, sesiuni, upload</div></div>
+    </div>
+    <div class="tech">
+      <div class="dot" style="background:#e0f2fe">🗄️</div>
+      <div><div class="name">MySQL 8</div><div class="role">12 tabele, FK, ENUM, indexes</div></div>
+    </div>
+    <div class="tech">
+      <div class="dot" style="background:#fef2f2">🌍</div>
+      <div><div class="name">HTTP / Apache</div><div class="role">Server local XAMPP</div></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ BAZA DE DATE ══════════════ -->
+<section id="db">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🗄️</div>
+    <div>
+      <h2>Baza de Date</h2>
+      <p>12 tabele MySQL relationale – <span style="color:#1d4ed8">albastru</span> = PK &nbsp;|&nbsp; <span style="color:#b45309">galben</span> = FK</p>
+    </div>
+  </div>
+
+  <div class="db-grid">
+
+    <div class="db-card">
+      <div class="db-head">proprietari <span class="db-count">5 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field">nume</div>
+        <div class="db-field">telefon</div>
+        <div class="db-field">email</div>
+        <div class="db-field">adresa</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">masini <span class="db-count">12 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> proprietar_id</div>
+        <div class="db-field">nr_inmatriculare</div>
+        <div class="db-field">marca / model</div>
+        <div class="db-field">capacitate_cmc</div>
+        <div class="db-field">tip_motor</div>
+        <div class="db-field">nr_locuri / tonaj</div>
+        <div class="db-field">serie_sasiu (VIN)</div>
+        <div class="db-field">km_actuali</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">soferi <span class="db-count">7 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field">nume / telefon</div>
+        <div class="db-field">nr_permis</div>
+        <div class="db-field">categorie_permis</div>
+        <div class="db-field">data_expirare_permis</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">masina_sofer <span class="db-count">6 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> sofer_id</div>
+        <div class="db-field">data_start</div>
+        <div class="db-field">data_sfarsit</div>
+        <div class="db-field">km_la_preluare</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">curse <span class="db-count">7 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> sofer_id</div>
+        <div class="db-field">data</div>
+        <div class="db-field">km_start</div>
+        <div class="db-field">km_final</div>
+        <div class="db-field">destinatie</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">servicii <span class="db-count">8 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field">data</div>
+        <div class="db-field">km_la_intrare</div>
+        <div class="db-field">tip (ENUM)</div>
+        <div class="db-field">descriere</div>
+        <div class="db-field">cost_total</div>
+        <div class="db-field">service_extern</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">interventii_service <span class="db-count">6 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> service_id</div>
+        <div class="db-field">denumire</div>
+        <div class="db-field">cantitate</div>
+        <div class="db-field">pret_unitar</div>
+        <div class="db-field">total</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">asigurari <span class="db-count">9 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field">tip (RCA/CASCO)</div>
+        <div class="db-field">companie</div>
+        <div class="db-field">nr_polita</div>
+        <div class="db-field">data_expirare</div>
+        <div class="db-field">pret (RON)</div>
+        <div class="db-field">fisier_pdf</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">viniete <span class="db-count">7 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field">tara</div>
+        <div class="db-field">tip</div>
+        <div class="db-field">data_expirare</div>
+        <div class="db-field">cost (RON)</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">seturi_anvelope <span class="db-count">8 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field">tip_sezon (ENUM)</div>
+        <div class="db-field">marca</div>
+        <div class="db-field">dimensiune</div>
+        <div class="db-field">tip_set (ENUM)</div>
+        <div class="db-field">stare (ENUM)</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">schimburi_anvelope <span class="db-count">6 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> masina_id</div>
+        <div class="db-field fk-field"><span class="lbl lbl-fk">FK</span> set_montat_id</div>
+        <div class="db-field">data</div>
+        <div class="db-field">km_la_schimb</div>
+      </div>
+    </div>
+
+    <div class="db-card">
+      <div class="db-head">utilizatori <span class="db-count">6 col</span></div>
+      <div class="db-body">
+        <div class="db-field"><span class="lbl lbl-pk">PK</span> id</div>
+        <div class="db-field">username</div>
+        <div class="db-field">email</div>
+        <div class="db-field">password (hash)</div>
+        <div class="db-field">rol (ENUM)</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ STRUCTURA FISIERE ══════════════ -->
+<section id="fisiere">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">📁</div>
+    <div>
+      <h2>Structura fișiere</h2>
+      <p>Organizarea folderelor și fișierelor PHP, CSS, JS, SQL</p>
+    </div>
+  </div>
+
+  <div class="tree">
+<span class="d">parc-auto/</span>
+├── <span class="ph">index.php</span>               <span class="cm"># Dashboard + alerte</span>
+├── <span class="ph">login.php</span>               <span class="cm"># Autentificare</span>
+├── <span class="ph">logout.php</span>
+│
+├── <span class="d">config/</span>
+│   └── <span class="ph">db.php</span>              <span class="cm"># Conexiune PDO MySQL</span>
+│
+├── <span class="d">includes/</span>
+│   ├── <span class="ph">header.php</span>          <span class="cm"># Header HTML comun</span>
+│   ├── <span class="ph">nav.php</span>             <span class="cm"># Meniu navigare</span>
+│   ├── <span class="ph">footer.php</span>
+│   ├── <span class="ph">auth.php</span>            <span class="cm"># Verificare sesiune</span>
+│   └── <span class="ph">alerts.php</span>          <span class="cm"># Logică alerte expirare</span>
+│
+├── <span class="d">masini/</span>
+│   ├── <span class="ph">index.php</span>           <span class="cm"># Listă mașini</span>
+│   ├── <span class="ph">add.php</span>             <span class="cm"># Adăugare</span>
+│   ├── <span class="ph">edit.php</span>
+│   ├── <span class="ph">view.php</span>            <span class="cm"># Detalii + tot istoricul</span>
+│   └── <span class="ph">delete.php</span>
+│
+├── <span class="d">soferi/</span>
+│   ├── <span class="ph">index.php</span>  ├── <span class="ph">add.php</span>  ├── <span class="ph">edit.php</span>  └── <span class="ph">delete.php</span>
+│
+├── <span class="d">service/</span>
+│   ├── <span class="ph">index.php</span>  ├── <span class="ph">add.php</span>  ├── <span class="ph">view.php</span>  ├── <span class="ph">edit.php</span>
+│   └── <span class="ph">raport.php</span>          <span class="cm"># Raport per mașină (Business Analyst)</span>
+│
+├── <span class="d">asigurari/</span>
+│   ├── <span class="ph">index.php</span>  ├── <span class="ph">add.php</span>  ├── <span class="ph">edit.php</span>
+│   └── <span class="ph">download.php</span>        <span class="cm"># Descarcă PDF poliță</span>
+│
+├── <span class="d">viniete/</span>
+│   └── <span class="ph">index.php</span>  <span class="ph">add.php</span>  <span class="ph">edit.php</span>
+│
+├── <span class="d">anvelope/</span>
+│   ├── <span class="ph">index.php</span>  ├── <span class="ph">add.php</span>
+│   ├── <span class="ph">schimb.php</span>          <span class="cm"># Înregistrare schimb</span>
+│   └── <span class="ph">istoric.php</span>         <span class="cm"># Istoric schimburi</span>
+│
+├── <span class="d">curse/</span>
+│   └── <span class="ph">index.php</span>  <span class="ph">add.php</span>   <span class="cm"># Kilometraj per cursă</span>
+│
+├── <span class="d">proprietari/</span>
+│   └── <span class="ph">index.php</span>  <span class="ph">add.php</span>  <span class="ph">edit.php</span>
+│
+├── <span class="d">api/</span>
+│   ├── <span class="ph">get_masini.php</span>      <span class="cm"># JSON → JS</span>
+│   └── <span class="ph">get_alerts.php</span>      <span class="cm"># JSON alerte active</span>
+│
+├── <span class="d">assets/</span>
+│   ├── <span class="d">css/</span>  └── <span class="cs">style.css</span>
+│   ├── <span class="d">js/</span>   └── <span class="js">main.js</span>  <span class="js">alerts.js</span>
+│   └── <span class="d">uploads/asigurari/</span>  <span class="cm"># PDF-uri polițe</span>
+│
+└── <span class="d">sql/</span>
+    └── <span class="sq">schema.sql</span>          <span class="cm"># Script creare bază de date</span>
+  </div>
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ FLUXURI ══════════════ -->
+<section id="fluxuri">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🔄</div>
+    <div>
+      <h2>Fluxuri principale</h2>
+      <p>Pașii pentru operațiunile cheie din aplicație</p>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--slate);margin-bottom:14px;font-weight:600">Adăugare mașină nouă</p>
+  <div class="flow" style="gap:18px;margin-bottom:32px">
+    <div class="flow-step">
+      <div class="num">1</div>
+      <div><h4>Proprietar</h4><p>Creare sau selectare proprietar existent</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">2</div>
+      <div><h4>Date mașină</h4><p>Marcă, model, nr. înmatriculare, date tehnice</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">3</div>
+      <div><h4>Șofer</h4><p>Adăugare și asociere șofer</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">4</div>
+      <div><h4>Asigurare</h4><p>RCA/CASCO activ, PDF</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">5</div>
+      <div><h4>Rovinieta + Anvelope</h4><p>Completare documente inițiale</p></div>
+    </div>
+  </div>
+
+  <p style="font-size:13px;color:var(--slate);margin-bottom:14px;font-weight:600">Înregistrare intrare service</p>
+  <div class="flow" style="gap:18px">
+    <div class="flow-step">
+      <div class="num">1</div>
+      <div><h4>Selectare mașină</h4><p>Dată, km la intrare, tip intervenție</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">2</div>
+      <div><h4>Piese + manoperă</h4><p>Rânduri dinamice JS cu prețuri</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">3</div>
+      <div><h4>Calcul automat</h4><p>JS calculează total, PHP validează</p></div>
+    </div>
+    <div class="flow-step" style="position:relative">
+      <div class="num">4</div>
+      <div><h4>Salvare</h4><p>Redirect la view.php cu toate detaliile</p></div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ ALERTE ══════════════ -->
+<section id="alerte">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🔔</div>
+    <div>
+      <h2>Sistem Alerte</h2>
+      <p>Notificări automate de expirare afișate în dashboard</p>
+    </div>
+  </div>
+
+  <div class="al-list">
+    <div class="al al-red">
+      <span class="al-ico">🛡️</span>
+      <div class="al-txt">
+        <strong>Asigurare expirată sau critică</strong>
+        <span>RCA / CASCO – data expirare ≤ 7 zile sau depășită</span>
+      </div>
+      <span class="days days-red">≤ 7 zile</span>
+    </div>
+    <div class="al al-amber">
+      <span class="al-ico">🛡️</span>
+      <div class="al-txt">
+        <strong>Asigurare se apropie de expirare</strong>
+        <span>RCA / CASCO – data expirare între 7 și 30 de zile</span>
+      </div>
+      <span class="days days-amber">7 – 30 zile</span>
+    </div>
+    <div class="al al-red">
+      <span class="al-ico">🛣️</span>
+      <div class="al-txt">
+        <strong>Rovinieta expirată sau critică</strong>
+        <span>Data expirare ≤ 1 zi sau depășită</span>
+      </div>
+      <span class="days days-red">≤ 1 zi</span>
+    </div>
+    <div class="al al-amber">
+      <span class="al-ico">🛣️</span>
+      <div class="al-txt">
+        <strong>Rovinieta se apropie de expirare</strong>
+        <span>Data expirare între 1 și 15 zile</span>
+      </div>
+      <span class="days days-amber">1 – 15 zile</span>
+    </div>
+    <div class="al al-amber">
+      <span class="al-ico">👨‍✈️</span>
+      <div class="al-txt">
+        <strong>Permis șofer expiră curând</strong>
+        <span>Data expirare permis în mai puțin de 60 zile</span>
+      </div>
+      <span class="days days-amber">≤ 60 zile</span>
+    </div>
+    <div class="al al-blue">
+      <span class="al-ico">🔧</span>
+      <div class="al-txt">
+        <strong>Interval service km atins</strong>
+        <span>km actuali – km la ultimul service ≥ 10.000</span>
+      </div>
+      <span class="days days-blue">la 10k km</span>
+    </div>
+    <div class="al al-green">
+      <span class="al-ico">✅</span>
+      <div class="al-txt">
+        <strong>Totul în regulă</strong>
+        <span>Nicio expirare iminentă – dashboard verde</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ ROLURI ══════════════ -->
+<section id="roluri">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">👤</div>
+    <div>
+      <h2>Roluri utilizatori</h2>
+      <p>Niveluri de acces și permisiuni în aplicație</p>
+    </div>
+  </div>
+
+  <div class="role-grid">
+
+    <div class="role-card">
+      <div class="r-head">
+        <div class="r-emo" style="background:#fef2f2">👑</div>
+        <div><h3>Admin</h3><div class="r-sub">Acces complet</div></div>
+      </div>
+      <ul class="perm-list">
+        <li><span class="ok">✓</span> Gestionare utilizatori și roluri</li>
+        <li><span class="ok">✓</span> Adăugare / editare toate modulele</li>
+        <li><span class="ok">✓</span> Ștergere înregistrări</li>
+        <li><span class="ok">✓</span> Export rapoarte</li>
+        <li><span class="ok">✓</span> Configurare alerte</li>
+      </ul>
+    </div>
+
+    <div class="role-card">
+      <div class="r-head">
+        <div class="r-emo" style="background:#fffbeb">📊</div>
+        <div><h3>Business Analyst</h3><div class="r-sub">Rapoarte read-only</div></div>
+      </div>
+      <ul class="perm-list">
+        <li><span class="ok">✓</span> Vizualizare rapoarte service per mașină</li>
+        <li><span class="ok">✓</span> Acces rapoarte costuri</li>
+        <li><span class="ok">✓</span> Export PDF / CSV</li>
+        <li><span class="no">✗</span> Nu poate modifica date</li>
+        <li><span class="no">✗</span> Nu poate șterge</li>
+      </ul>
+    </div>
+
+    <div class="role-card">
+      <div class="r-head">
+        <div class="r-emo" style="background:#f0fdf4">✏️</div>
+        <div><h3>Operator</h3><div class="r-sub">Introducere date zilnice</div></div>
+      </div>
+      <ul class="perm-list">
+        <li><span class="ok">✓</span> Adăugare / editare mașini și șoferi</li>
+        <li><span class="ok">✓</span> Înregistrare curse (km)</li>
+        <li><span class="ok">✓</span> Înregistrare service și anvelope</li>
+        <li><span class="ok">✓</span> Adăugare asigurări și viniete</li>
+        <li><span class="no">✗</span> Nu poate șterge înregistrări</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+</section>
+
+<section id="auth" style="display:none">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🔐</div>
+    <div>
+      <h2>Autentificare</h2>
+      <p>Ecrane de Sign In și Sign Up — două tipuri de cont cu acces diferit</p>
+    </div>
+  </div>
+
+  <!-- two browser frames -->
+  <div class="auth-frames">
+
+    <!-- ── SIGN IN ── -->
+    <div>
+      <div class="auth-frame-label">🔑 Sign In — Autentificare</div>
+      <div class="auth-browser">
+        <div class="auth-chrome">
+          <div class="auth-dots">
+            <span style="background:#ff5f57"></span>
+            <span style="background:#febc2e"></span>
+            <span style="background:#28c840"></span>
+          </div>
+          <div class="auth-url">parcauto.ro/login</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-card">
+            <div class="auth-card-hd">
+              <div class="auth-card-ico">🔐</div>
+              <h3>Bun venit înapoi</h3>
+              <p class="auth-sub">Autentifică-te în contul tău</p>
+            </div>
+            <div class="auth-fgroup">
+              <label>Adresă email</label>
+              <input class="auth-input" type="text" value="admin@parcauto.ro" readonly/>
+            </div>
+            <div class="auth-fgroup">
+              <label>Parolă</label>
+              <input class="auth-input" type="password" value="admin123" readonly/>
+            </div>
+            <div class="auth-remember">
+              <input type="checkbox" checked readonly style="accent-color:#2563eb;width:13px;height:13px"/>
+              Ține-mă minte pe acest dispozitiv
+            </div>
+            <button class="auth-btn">Autentifică-te</button>
+            <div class="auth-link-row">
+              Nu ai cont? <a href="#auth">Creează cont nou</a>
+            </div>
+
+            <!-- demo accounts -->
+            <div class="demo-strip">
+              <div class="demo-strip-title">Conturi demo disponibile</div>
+              <div class="demo-accs">
+                <div class="demo-acc">
+                  <div class="demo-acc-l">
+                    <div class="demo-av av-adm">A</div>
+                    <div>
+                      <div class="demo-acc-name">Administrator</div>
+                      <div class="demo-acc-cred">admin@parcauto.ro · admin123</div>
+                    </div>
+                  </div>
+                  <span class="demo-role dr-adm">Admin</span>
+                </div>
+                <div class="demo-acc">
+                  <div class="demo-acc-l">
+                    <div class="demo-av av-usr">U</div>
+                    <div>
+                      <div class="demo-acc-name">Ion Popescu</div>
+                      <div class="demo-acc-cred">user@parcauto.ro · user123</div>
+                    </div>
+                  </div>
+                  <span class="demo-role dr-usr">Utilizator</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SIGN UP ── -->
+    <div>
+      <div class="auth-frame-label">📝 Sign Up — Cont nou</div>
+      <div class="auth-browser">
+        <div class="auth-chrome">
+          <div class="auth-dots">
+            <span style="background:#ff5f57"></span>
+            <span style="background:#febc2e"></span>
+            <span style="background:#28c840"></span>
+          </div>
+          <div class="auth-url">parcauto.ro/register</div>
+        </div>
+        <div class="auth-body">
+          <div class="auth-card">
+            <div class="auth-card-hd">
+              <div class="auth-card-ico">📝</div>
+              <h3>Creare cont nou</h3>
+              <p class="auth-sub">Completează datele de mai jos</p>
+            </div>
+            <div class="auth-fgroup">
+              <label>Nume complet</label>
+              <input class="auth-input" type="text" placeholder="Ion Popescu" readonly/>
+            </div>
+            <div class="auth-fgroup">
+              <label>Adresă email</label>
+              <input class="auth-input" type="text" placeholder="ion@parcauto.ro" readonly/>
+            </div>
+            <div class="auth-fgroup">
+              <label>Parolă</label>
+              <input class="auth-input" type="password" placeholder="••••••••" readonly/>
+            </div>
+            <div class="auth-fgroup">
+              <label>Rol</label>
+              <select class="auth-select">
+                <option>Utilizator (vizualizare)</option>
+                <option>Administrator (acces complet)</option>
+              </select>
+            </div>
+            <button class="auth-btn" style="margin-top:8px">Creează cont</button>
+            <div class="auth-link-row">
+              Ai deja cont? <a href="#auth">Autentifică-te</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /auth-frames -->
+
+  <!-- access comparison -->
+  <div class="access-table-wrap">
+    <div class="access-table-head">🔒 Acces pe rol — Admin vs Utilizator</div>
+    <table class="acc-tbl">
+      <thead>
+        <tr>
+          <th>Funcționalitate</th>
+          <th style="text-align:center">👑 Admin</th>
+          <th style="text-align:center">👤 Utilizator</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Vizualizare dashboard și alerte</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Vizualizare mașini, șoferi, service</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+        </tr>
+        <tr>
+          <td>Adăugare înregistrări noi</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-no">✗</span></td>
+        </tr>
+        <tr>
+          <td><strong>Editare înregistrări existente</strong></td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-no">✗</span></td>
+        </tr>
+        <tr>
+          <td>Ștergere date</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-no">✗</span></td>
+        </tr>
+        <tr>
+          <td>Gestionare utilizatori</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-no">✗</span></td>
+        </tr>
+        <tr>
+          <td>Export / rapoarte PDF</td>
+          <td style="text-align:center"><span class="acc-yes">✓</span></td>
+          <td style="text-align:center"><span class="acc-no">✗</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ MOCKUP UI ══════════════ -->
+<section id="mockup">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">🖥️</div>
+    <div>
+      <h2>Mockup Interfață</h2>
+      <p>Previzualizare interactivă a ecranelor principale ale aplicației</p>
+    </div>
+  </div>
+
+  <!-- view toggle -->
+  <div class="mv-bar">
+    <button class="mv-btn" onclick="setMockView('phone',this)">📱 Telefon</button>
+    <button class="mv-btn mvon" onclick="setMockView('web',this)">🖥️ Web</button>
+    <button class="mv-btn" onclick="setMockView('both',this)">📱🖥️ Ambele</button>
+  </div>
+
+  <div class="mv-container mode-web">
+
+  <!-- ════ WEB VIEW ════ -->
+  <div id="mv-web">
+  <div class="mock-browser">
+    <!-- Chrome bar -->
+    <div class="mock-chrome">
+      <div class="mock-dots">
+        <span style="background:#ff5f57"></span>
+        <span style="background:#febc2e"></span>
+        <span style="background:#28c840"></span>
+      </div>
+      <div class="mock-url" id="mk-url-bar">localhost/parc-auto/login.php</div>
+    </div>
+
+    <!-- App shell -->
+    <div class="mock-shell">
+
+      <!-- Sidebar -->
+      <div class="mock-sb">
+        <div class="mock-sb-logo">🚗 Parc Auto</div>
+
+        <div class="mock-sb-section">Principal</div>
+        <a id="sb-dash" onclick="msShow('dash',this)"><span class="ms-emo">🏠</span> Dashboard</a>
+        <a onclick="msShow('masini',this)"><span class="ms-emo">🚗</span> Mașini</a>
+        <a onclick="msShow('soferi',this)"><span class="ms-emo">👨‍✈️</span> Șoferi</a>
+
+        <div class="mock-sb-section">Documente</div>
+        <a onclick="msShow('service',this)"><span class="ms-emo">🔧</span> Service</a>
+        <a onclick="msShow('asigurari',this)"><span class="ms-emo">🛡️</span> Asigurări</a>
+        <a onclick="msShow('viniete',this)"><span class="ms-emo">🛣️</span> Viniete</a>
+        <a onclick="msShow('anvelope',this)"><span class="ms-emo">⚙️</span> Anvelope</a>
+        <a onclick="msShow('itp',this)"><span class="ms-emo">🔍</span> ITP</a>
+
+        <div class="mock-sb-section">Ajutor</div>
+        <a onclick="msShow('support',this)"><span class="ms-emo">💬</span> Support<span id="supp-badge" style="display:none;margin-left:auto;background:#dc2626;color:#fff;font-size:9px;font-weight:800;padding:1px 6px;border-radius:99px;line-height:16px">3</span></a>
+
+        <div class="mock-sb-section">Autentificare</div>
+        <a id="sb-signin" onclick="msShow('signin',this)" class="ms-on"><span class="ms-emo">🔐</span> Sign In</a>
+        <a id="sb-signup" onclick="msShow('signup',this)"><span class="ms-emo">📝</span> Sign Up</a>
+
+        <div id="mk-user-info" style="margin-top:auto;padding:12px 16px;border-top:1px solid #1e293b;font-size:11px;color:#64748b">Neautentificat</div>
+      </div>
+
+      <!-- Main content -->
+      <div class="mock-main">
+        <div id="mk-toast" class="mk-alert mk-green" style="display:none;position:sticky;top:8px;z-index:50;margin-bottom:12px"></div>
+
+        <!-- ── DASHBOARD ── -->
+        <div id="ms-dash" class="ms">
+          <div class="ms-title">Dashboard</div>
+          <div class="ms-sub">Bun venit, Admin · 14 mai 2026</div>
+
+          <div class="mk-alert mk-red">
+            <span class="mk-ico">🛡️</span>
+            <span class="mk-msg"><strong>B-123-ABC</strong> — Asigurare RCA expiră în <strong>5 zile</strong> (19.05.2026)</span>
+            <span class="mk-link">Detalii</span>
+          </div>
+          <div class="mk-alert mk-red">
+            <span class="mk-ico">🛣️</span>
+            <span class="mk-msg"><strong>CJ-456-DEF</strong> — Rovinieta RO expiră în <strong>3 zile</strong> (17.05.2026)</span>
+            <span class="mk-link">Detalii</span>
+          </div>
+          <div class="mk-alert mk-amber">
+            <span class="mk-ico">👨‍✈️</span>
+            <span class="mk-msg"><strong>Ion Popescu</strong> — Permis conducere expiră în <strong>28 zile</strong> (11.06.2026)</span>
+            <span class="mk-link">Detalii</span>
+          </div>
+          <div class="mk-alert mk-green">
+            <span class="mk-ico">✅</span>
+            <span class="mk-msg">Restul documentelor sunt în regulă</span>
+          </div>
+
+          <div class="mk-stats">
+            <div class="mk-stat"><div class="mk-n">5</div><div class="mk-l">Mașini active</div></div>
+            <div class="mk-stat"><div class="mk-n">3</div><div class="mk-l">Șoferi</div></div>
+            <div class="mk-stat" style="--n-color:#dc2626"><div class="mk-n" style="color:#dc2626">3</div><div class="mk-l">Alerte active</div></div>
+            <div class="mk-stat"><div class="mk-n">2</div><div class="mk-l">Service luna aceasta</div></div>
+          </div>
+
+          <div class="mk-table-wrap">
+            <div class="mk-table-head">
+              <span>Ultimele intervenții service</span>
+              <button class="mk-btn mk-btn-ghost mk-btn-sm">Vezi toate</button>
+            </div>
+            <table class="mkt">
+              <thead><tr>
+                <th>Mașina</th><th>Data</th><th>Tip</th><th>Km</th><th>Cost</th><th>Service</th>
+              </tr></thead>
+              <tbody>
+                <tr><td><strong>B-123-ABC</strong><br><span style="color:#94a3b8;font-size:10px">Dacia Duster</span></td><td>10.05.2026</td><td><span class="mk-badge mb-blue">Revizie</span></td><td>45.200</td><td><strong>450 RON</strong></td><td>AutoExpert SRL</td></tr>
+                <tr><td><strong>CJ-789-GHI</strong><br><span style="color:#94a3b8;font-size:10px">Renault Megane</span></td><td>02.05.2026</td><td><span class="mk-badge mb-amber">Reparație</span></td><td>62.100</td><td><strong>1.200 RON</strong></td><td>Service Central</td></tr>
+                <tr><td><strong>B-456-DEF</strong><br><span style="color:#94a3b8;font-size:10px">VW Golf</span></td><td>15.04.2026</td><td><span class="mk-badge mb-red">Accident</span></td><td>87.400</td><td><strong>4.800 RON</strong></td><td>CarFix Cluj</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ── MAȘINI ── -->
+        <div id="ms-masini" class="ms">
+          <div class="ms-title">Mașini</div>
+          <div class="ms-sub" id="masini-sub">4 mașini înregistrate</div>
+
+          <div class="mk-table-wrap">
+            <div class="mk-table-head">
+              <span>Listă mașini</span>
+              <button class="mk-btn mk-btn-blue admin-only" onclick="masiniForm(-1)">＋ Adaugă mașină</button>
+            </div>
+            <table class="mkt">
+              <thead><tr>
+                <th>Nr. înmatr.</th><th>Marcă / Model</th><th>An</th><th>Motor</th><th>Km actuali</th><th>Proprietar</th><th>Acțiuni</th>
+              </tr></thead>
+              <tbody id="masini-tbody"></tbody>
+            </table>
+          </div>
+          <div id="masini-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── ȘOFERI ── -->
+        <div id="ms-soferi" class="ms">
+          <div class="ms-title">Șoferi</div>
+          <div class="ms-sub" id="soferi-sub">3 șoferi activi</div>
+
+          <div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+            <button class="mk-btn mk-btn-blue admin-only" onclick="soferForm(-1)">＋ Adaugă șofer</button>
+          </div>
+
+          <div class="mk-sofer-grid" id="soferi-grid"></div>
+          <div id="soferi-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── SERVICE ── -->
+        <div id="ms-service" class="ms">
+          <div class="ms-title">Adaugă intervenție service</div>
+          <div class="ms-sub">Completează datele pentru noua înregistrare</div>
+
+          <div class="mk-form">
+            <div class="mk-row">
+              <div class="mk-field">
+                <label>Mașina</label>
+                <select class="mk-select">
+                  <option>B-123-ABC — Dacia Duster</option>
+                  <option>B-456-DEF — VW Golf</option>
+                  <option>CJ-789-GHI — Renault Megane</option>
+                </select>
+              </div>
+              <div class="mk-field">
+                <label>Tip intervenție</label>
+                <select class="mk-select">
+                  <option>Revizie periodică</option>
+                  <option>Reparație</option>
+                  <option>Accident</option>
+                  <option>Vopsitorie</option>
+                  <option>Altele</option>
+                </select>
+              </div>
+            </div>
+            <div class="mk-row mk-row3">
+              <div class="mk-field">
+                <label>Data</label>
+                <input class="mk-input" type="text" value="14.05.2026"/>
+              </div>
+              <div class="mk-field">
+                <label>Km la intrare</label>
+                <input class="mk-input" type="text" value="45.200"/>
+              </div>
+              <div class="mk-field">
+                <label>Service extern</label>
+                <input class="mk-input" type="text" value="AutoExpert SRL"/>
+              </div>
+            </div>
+
+            <div class="mk-divider"></div>
+
+            <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:10px">Piese și manoperă</div>
+
+            <div class="mk-piese-head">
+              <span>Denumire</span><span>Cant.</span><span>Preț/u (RON)</span><span>Total (RON)</span><span></span>
+            </div>
+
+            <div id="srv-rows">
+            <div class="mk-piese-row srv-row">
+              <input class="mk-input srv-den"  value="Filtru ulei"/>
+              <input class="mk-input srv-cant" value="1"     oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-pret" value="45,00" oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-total" value="45,00" readonly style="color:#1d4ed8;font-weight:600"/>
+              <button class="mk-btn mk-btn-red mk-btn-sm" onclick="this.closest('.srv-row').remove();srvCalcTotal()">✕</button>
+            </div>
+            <div class="mk-piese-row srv-row">
+              <input class="mk-input srv-den"  value="Ulei motor 5W40 (5L)"/>
+              <input class="mk-input srv-cant" value="5"     oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-pret" value="35,00" oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-total" value="175,00" readonly style="color:#1d4ed8;font-weight:600"/>
+              <button class="mk-btn mk-btn-red mk-btn-sm" onclick="this.closest('.srv-row').remove();srvCalcTotal()">✕</button>
+            </div>
+            <div class="mk-piese-row srv-row">
+              <input class="mk-input srv-den"  value="Filtru aer"/>
+              <input class="mk-input srv-cant" value="1"     oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-pret" value="85,00" oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-total" value="85,00" readonly style="color:#1d4ed8;font-weight:600"/>
+              <button class="mk-btn mk-btn-red mk-btn-sm" onclick="this.closest('.srv-row').remove();srvCalcTotal()">✕</button>
+            </div>
+            <div class="mk-piese-row srv-row">
+              <input class="mk-input srv-den"  value="Manoperă revizie"/>
+              <input class="mk-input srv-cant" value="1"      oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-pret" value="150,00" oninput="srvCalcTotal()"/>
+              <input class="mk-input srv-total" value="150,00" readonly style="color:#1d4ed8;font-weight:600"/>
+              <button class="mk-btn mk-btn-red mk-btn-sm" onclick="this.closest('.srv-row').remove();srvCalcTotal()">✕</button>
+            </div>
+            </div>
+
+            <div style="margin-top:8px">
+              <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="srvAddRow()">＋ Adaugă rând</button>
+            </div>
+
+            <div class="mk-piese-total">
+              <span class="tot-label">Total intervenție:</span>
+              <span class="tot-val" id="srv-total-val">455,00 RON</span>
+            </div>
+
+            <div class="mk-actions">
+              <button class="mk-btn mk-btn-ghost" onclick="srvReset()">Anulează</button>
+              <button class="mk-btn mk-btn-blue" onclick="srvSave()">💾 Salvează intervenția</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ASIGURĂRI ── -->
+        <div id="ms-asigurari" class="ms">
+          <div class="ms-title">Asigurări</div>
+          <div class="ms-sub">Polițe RCA și CASCO pentru toate mașinile</div>
+
+          <div class="mk-table-wrap">
+            <div class="mk-table-head">
+              <span>Toate polițele</span>
+              <button class="mk-btn mk-btn-blue admin-only" onclick="asigForm(-1)">＋ Adaugă poliță</button>
+            </div>
+            <table class="mkt">
+              <thead><tr>
+                <th>Mașina</th><th>Tip</th><th>Companie</th><th>Nr. poliță</th><th>Expirare</th><th>Preț</th><th>Status</th><th></th>
+              </tr></thead>
+              <tbody id="asig-tbody">
+                <tr>
+                  <td><strong>B-123-ABC</strong></td>
+                  <td><span class="mk-badge mb-blue">RCA</span></td>
+                  <td>Allianz</td><td>RCA-2024-0012</td>
+                  <td style="color:#dc2626;font-weight:600">19.05.2026</td>
+                  <td>650 RON</td>
+                  <td><span class="mk-badge mb-red">⚠ Critică</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm">📄 PDF</button></td>
+                </tr>
+                <tr>
+                  <td><strong>B-456-DEF</strong></td>
+                  <td><span class="mk-badge mb-purple">CASCO</span></td>
+                  <td>Generali</td><td>CSC-2023-0456</td>
+                  <td>15.07.2026</td>
+                  <td>2.400 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Activă</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm">📄 PDF</button></td>
+                </tr>
+                <tr>
+                  <td><strong>CJ-789-GHI</strong></td>
+                  <td><span class="mk-badge mb-blue">RCA</span></td>
+                  <td>NN Asigurări</td><td>RCA-2024-0089</td>
+                  <td style="color:#dc2626;font-weight:600">01.03.2026</td>
+                  <td>580 RON</td>
+                  <td><span class="mk-badge mb-red">✗ Expirată</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm">📄 PDF</button></td>
+                </tr>
+                <tr>
+                  <td><strong>IS-321-JKL</strong></td>
+                  <td><span class="mk-badge mb-blue">RCA</span></td>
+                  <td>Omniasig</td><td>RCA-2025-0201</td>
+                  <td>10.02.2027</td>
+                  <td>720 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Activă</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm">📄 PDF</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="asig-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── VINIETE ── -->
+        <div id="ms-viniete" class="ms">
+          <div class="ms-title">Viniete / Roviniete</div>
+          <div class="ms-sub">Evidență roviniete pe mașini și țări</div>
+
+          <div class="mk-table-wrap">
+            <div class="mk-table-head">
+              <span>Toate viniete</span>
+              <button class="mk-btn mk-btn-blue" onclick="vinieteForm()">＋ Adaugă</button>
+            </div>
+            <table class="mkt">
+              <thead><tr>
+                <th>Mașina</th><th>Țară</th><th>Tip</th><th>Valabilă de la</th><th>Expiră</th><th>Cost</th><th>Status</th>
+              </tr></thead>
+              <tbody id="viniete-tbody">
+                <tr>
+                  <td><strong>B-123-ABC</strong></td>
+                  <td>🇷🇴 România</td><td>Anuală</td>
+                  <td>01.01.2026</td>
+                  <td style="color:#dc2626;font-weight:600">17.05.2026</td>
+                  <td>47 RON</td>
+                  <td><span class="mk-badge mb-red">⚠ 3 zile</span></td>
+                </tr>
+                <tr>
+                  <td><strong>B-456-DEF</strong></td>
+                  <td>🇷🇴 România</td><td>Anuală</td>
+                  <td>01.01.2026</td><td>31.12.2026</td>
+                  <td>47 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Validă</span></td>
+                </tr>
+                <tr>
+                  <td><strong>B-456-DEF</strong></td>
+                  <td>🇦🇹 Austria</td><td>10 zile</td>
+                  <td>05.05.2026</td><td>15.05.2026</td>
+                  <td>8,70 EUR</td>
+                  <td><span class="mk-badge mb-amber">⚠ Expirată azi</span></td>
+                </tr>
+                <tr>
+                  <td><strong>CJ-789-GHI</strong></td>
+                  <td>🇷🇴 România</td><td>Trimestrială</td>
+                  <td>01.04.2026</td><td>30.06.2026</td>
+                  <td>27 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Validă</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="viniete-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── ANVELOPE ── -->
+        <div id="ms-anvelope" class="ms">
+          <div class="ms-title">Anvelope</div>
+          <div class="ms-sub">Seturi vara / iarnă per mașină — B-123-ABC Dacia Duster</div>
+
+          <div style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px">
+            <button class="mk-btn mk-btn-ghost" onclick="anvForm('schimb')">🔄 Înregistrează schimb</button>
+            <button class="mk-btn mk-btn-blue admin-only" onclick="anvForm('add')">＋ Adaugă set</button>
+          </div>
+
+          <div class="mk-tire-cols">
+            <div class="mk-tire-group">
+              <h4>🔵 Montate acum</h4>
+              <div class="mk-tire-card">
+                <div class="tc-head">
+                  <div>
+                    <div class="tc-name">Michelin Primacy 4</div>
+                    <span class="mk-badge mb-blue" style="margin-top:4px;display:inline-block">Vară · Roți complete</span>
+                  </div>
+                  <span class="mk-badge mb-green">Montate</span>
+                </div>
+                <div class="tc-info">
+                  <span>Dimensiune: 205/55 R16</span>
+                  <span>Montat: 15.04.2026 · 41.200 km</span>
+                  <span>4 bucăți (jante aliaj)</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mk-tire-group">
+              <h4>⚪ Depozitate</h4>
+              <div class="mk-tire-card">
+                <div class="tc-head">
+                  <div>
+                    <div class="tc-name">Bridgestone Blizzak</div>
+                    <span class="mk-badge mb-slate" style="margin-top:4px;display:inline-block">Iarnă · Anvelope</span>
+                  </div>
+                  <span class="mk-badge mb-slate">Depozitate</span>
+                </div>
+                <div class="tc-info">
+                  <span>Dimensiune: 205/55 R16</span>
+                  <span>Demontat: 15.04.2026 · 41.200 km</span>
+                  <span>4 bucăți (fără jante)</span>
+                </div>
+              </div>
+              <div class="mk-tire-card">
+                <div class="tc-head">
+                  <div>
+                    <div class="tc-name">Goodyear Vector 4S</div>
+                    <span class="mk-badge mb-purple" style="margin-top:4px;display:inline-block">All-Season · Anvelope</span>
+                  </div>
+                  <span class="mk-badge mb-slate">Depozitate</span>
+                </div>
+                <div class="tc-info">
+                  <span>Dimensiune: 205/55 R16</span>
+                  <span>Adăugate: 10.01.2025</span>
+                  <span>4 bucăți</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:16px">
+            <div class="mk-table-wrap">
+              <div class="mk-table-head"><span>Istoric schimburi</span></div>
+              <table class="mkt">
+                <thead><tr><th>Data</th><th>Km</th><th>Set montat</th><th>Set demontat</th></tr></thead>
+                <tbody>
+                  <tr><td>15.04.2026</td><td>41.200</td><td>Michelin Primacy 4 (vară)</td><td>Bridgestone Blizzak (iarnă)</td></tr>
+                  <tr><td>10.11.2025</td><td>36.800</td><td>Bridgestone Blizzak (iarnă)</td><td>Michelin Primacy 4 (vară)</td></tr>
+                  <tr><td>18.04.2025</td><td>31.500</td><td>Michelin Primacy 4 (vară)</td><td>Bridgestone Blizzak (iarnă)</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div id="anv-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── SUPPORT ── -->
+        <div id="ms-support" class="ms">
+          <div class="ms-title">Customer Support</div>
+          <div class="ms-sub">Contact, feedback și întrebări frecvente</div>
+
+          <!-- ── ADMIN: Requesturi ── -->
+          <div class="admin-only" id="supp-requests-wrap" style="margin-bottom:16px">
+
+            <div id="supp-notif" class="mk-alert mk-red" style="margin-bottom:12px">
+              <span class="mk-ico">🔔</span>
+              <span class="mk-msg"><strong>3 requesturi noi</strong> neprocesate — necesită răspuns.</span>
+              <span class="mk-link" onclick="document.getElementById('tickets-wrap').scrollIntoView({behavior:'smooth'})">Vezi</span>
+            </div>
+
+            <div id="supp-reply-ok" class="mk-alert mk-green" style="display:none;margin-bottom:12px">
+              <span class="mk-ico">✅</span>
+              <span class="mk-msg">Răspuns trimis! Ticketul a fost marcat ca rezolvat.</span>
+            </div>
+
+            <div class="mk-table-wrap" id="tickets-wrap" style="margin-bottom:12px">
+              <div class="mk-table-head">
+                <span>📬 Requesturi utilizatori</span>
+                <span class="mk-badge mb-red" id="new-tickets-badge">3 noi</span>
+              </div>
+              <table class="mkt">
+                <thead><tr>
+                  <th>ID</th><th>Utilizator</th><th>Subiect / Modul</th><th>Data</th><th>Status</th><th>Acțiuni</th>
+                </tr></thead>
+                <tbody id="tickets-tbody"></tbody>
+              </table>
+            </div>
+
+            <!-- Reply panel -->
+            <div id="reply-panel" style="display:none;margin-bottom:12px">
+              <div class="mk-table-wrap">
+                <div class="mk-table-head">
+                  <span id="reply-ticket-title">Răspunde la ticket</span>
+                  <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="closeReply()">✕ Închide</button>
+                </div>
+                <div style="padding:14px;display:flex;flex-direction:column;gap:10px">
+                  <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:12px">
+                    <div style="font-size:10px;font-weight:700;text-transform:uppercase;color:#64748b;margin-bottom:5px">Mesajul original</div>
+                    <div id="reply-original-msg" style="font-size:12px;color:#334155;line-height:1.6"></div>
+                    <div id="reply-original-meta" style="font-size:10px;color:#94a3b8;margin-top:5px"></div>
+                  </div>
+                  <div class="mk-field">
+                    <label>Răspuns (Admin)</label>
+                    <textarea id="reply-textarea" class="mk-input" style="height:80px;resize:none;font-family:inherit" placeholder="Scrie răspunsul tău..."></textarea>
+                  </div>
+                  <div style="display:flex;gap:8px;justify-content:flex-end">
+                    <button class="mk-btn mk-btn-ghost" onclick="closeReply()">Anulează</button>
+                    <button class="mk-btn mk-btn-blue" onclick="sendTicketReply()">📤 Trimite răspuns</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /admin requests -->
+
+          <!-- contact -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px">
+            <div class="mk-stat" style="text-align:left;padding:14px">
+              <div style="font-size:22px;margin-bottom:6px">📞</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">Telefon</div>
+              <div style="font-size:11px;color:#64748b">+40 721 000 111</div>
+              <div style="font-size:11px;color:#64748b">L–V · 09:00–18:00</div>
+              <div style="margin-top:6px"><span class="mk-badge mb-green" style="font-size:10px">● Online</span></div>
+            </div>
+            <div class="mk-stat" style="text-align:left;padding:14px">
+              <div style="font-size:22px;margin-bottom:6px">📧</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">Email</div>
+              <div style="font-size:11px;color:#64748b">support@parcauto.ro</div>
+              <div style="font-size:11px;color:#64748b">Răspuns în 24h</div>
+              <div style="margin-top:6px"><span class="mk-badge mb-green" style="font-size:10px">● Activ</span></div>
+            </div>
+            <div class="mk-stat" style="text-align:left;padding:14px">
+              <div style="font-size:22px;margin-bottom:6px">💬</div>
+              <div style="font-size:12px;font-weight:700;margin-bottom:3px">Chat live</div>
+              <div style="font-size:11px;color:#64748b">În aplicație</div>
+              <div style="font-size:11px;color:#64748b">3 agenți activi</div>
+              <div style="margin-top:6px"><span class="mk-badge mb-green" style="font-size:10px">● Online</span></div>
+            </div>
+          </div>
+
+          <!-- feedback form -->
+          <div class="mk-table-wrap" style="margin-bottom:14px">
+            <div class="mk-table-head"><span>✍️ Trimite feedback</span></div>
+            <div style="padding:16px;display:flex;flex-direction:column;gap:10px">
+
+              <div id="fb-err" class="mk-alert mk-red" style="display:none">
+                <span class="mk-ico">⚠️</span>
+                <span class="mk-msg">Completează toate câmpurile obligatorii (Nume, Subiect, Mesaj).</span>
+              </div>
+
+              <div id="fb-ok" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;text-align:center">
+                <div style="font-size:22px;margin-bottom:6px">✅</div>
+                <div style="font-size:13px;font-weight:700;color:#15803d">Feedback trimis cu succes!</div>
+                <div style="font-size:11px;color:#64748b;margin-top:3px">Adminul a primit requestul tău și va răspunde în curând.</div>
+              </div>
+
+              <div id="fb-fields">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                  <div class="mk-field"><label>Nume *</label><input id="fb-nume" class="mk-input" placeholder="Ion Popescu"/></div>
+                  <div class="mk-field"><label>Email</label><input id="fb-email" class="mk-input" placeholder="ion@exemplu.ro"/></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                  <div class="mk-field">
+                    <label>Subiect *</label>
+                    <select id="fb-subj" class="mk-select"><option value="">— Alege —</option><option>Problemă tehnică</option><option>Sugestie</option><option>Întrebare</option></select>
+                  </div>
+                  <div class="mk-field">
+                    <label>Modul afectat</label>
+                    <select id="fb-mod" class="mk-select"><option value="">— General —</option><option>Dashboard</option><option>Mașini</option><option>Șoferi</option><option>Service</option><option>Asigurări</option><option>Viniete</option><option>Anvelope</option><option>ITP</option></select>
+                  </div>
+                </div>
+                <div class="mk-field" style="margin-bottom:10px"><label>Mesaj *</label><textarea id="fb-msg" class="mk-input" style="height:70px;resize:none;font-family:inherit" placeholder="Descrie problema sau sugestia..."></textarea></div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <div class="star-rating sm" id="fb-stars" data-sel="0">
+                    <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                  </div>
+                  <button class="mk-btn mk-btn-blue" onclick="submitFeedback()">📤 Trimite</button>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- faq -->
+          <div class="mk-table-wrap">
+            <div class="mk-table-head"><span>❓ Întrebări frecvente</span></div>
+            <div style="padding:8px 0">
+              <div class="faq-item">
+                <button class="faq-q" style="font-size:12px;padding:12px 16px" onclick="faqToggle(this)">
+                  <span>Cum adaug o mașină nouă?</span><span class="faq-arrow">▼</span>
+                </button>
+                <div class="faq-a" style="font-size:12px">Mergi la <code>Mașini → Adaugă mașină</code>, completează câmpurile obligatorii și asociază un proprietar. Poți adăuga asigurarea și rovinieta imediat după salvare.</div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-q" style="font-size:12px;padding:12px 16px" onclick="faqToggle(this)">
+                  <span>Cum înregistrez o intervenție service?</span><span class="faq-arrow">▼</span>
+                </button>
+                <div class="faq-a" style="font-size:12px">Navighează la <code>Service → Adaugă intervenție</code>. Selectează mașina, data și km. Adaugă piese/manoperă — totalul se calculează automat.</div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-q" style="font-size:12px;padding:12px 16px" onclick="faqToggle(this)">
+                  <span>Alertele de expirare nu apar. Ce fac?</span><span class="faq-arrow">▼</span>
+                </button>
+                <div class="faq-a" style="font-size:12px">Verifică că <code>includes/alerts.php</code> este inclus în <code>index.php</code> și că datele de expirare sunt completate corect în baza de date.</div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-q" style="font-size:12px;padding:12px 16px" onclick="faqToggle(this)">
+                  <span>Cum resetez parola unui utilizator?</span><span class="faq-arrow">▼</span>
+                </button>
+                <div class="faq-a" style="font-size:12px">Doar <code>Admin</code> poate reseta parolele. Mergi la <code>Utilizatori → Editare</code>, introdu noua parolă — se stochează automat cu <code>password_hash()</code>.</div>
+              </div>
+              <div class="faq-item">
+                <button class="faq-q" style="font-size:12px;padding:12px 16px" onclick="faqToggle(this)">
+                  <span>Pot asocia mai mulți șoferi la aceeași mașină?</span><span class="faq-arrow">▼</span>
+                </button>
+                <div class="faq-a" style="font-size:12px">Da, prin tabela <code>masina_sofer</code>. Fiecare asociere are perioadă de start/sfârșit. Istoricul complet e vizibil în pagina mașinii.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── ITP ── -->
+        <div id="ms-itp" class="ms">
+          <div class="ms-title">ITP</div>
+          <div class="ms-sub">Inspecție Tehnică Periodică pentru toate mașinile</div>
+
+          <div class="mk-alert mk-red" style="margin-bottom:14px">
+            <span class="mk-ico">🔍</span>
+            <span class="mk-msg"><strong>CJ-456-DEF</strong> — ITP expiră în <strong>8 zile</strong> (22.05.2026)</span>
+            <span class="mk-link">Programare</span>
+          </div>
+
+          <div class="mk-table-wrap">
+            <div class="mk-table-head">
+              <span>Evidență ITP</span>
+              <button class="mk-btn mk-btn-blue admin-only" onclick="itpForm(-1)">＋ Adaugă ITP</button>
+            </div>
+            <table class="mkt">
+              <thead><tr>
+                <th>Mașina</th><th>Stație ITP</th><th>Data efectuării</th><th>Valabilitate</th><th>Expirare</th><th>Cost</th><th>Status</th><th></th>
+              </tr></thead>
+              <tbody id="itp-tbody">
+                <tr>
+                  <td><strong>B-123-ABC</strong><br><span style="color:#94a3b8;font-size:10px">Dacia Duster</span></td>
+                  <td>AutoTest Cluj</td>
+                  <td>14.05.2025</td>
+                  <td>12 luni</td>
+                  <td>14.05.2026</td>
+                  <td>180 RON</td>
+                  <td><span class="mk-badge mb-amber">⚠ Expiră curând</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm admin-only">✏️</button></td>
+                </tr>
+                <tr>
+                  <td><strong>CJ-456-DEF</strong><br><span style="color:#94a3b8;font-size:10px">Ford Transit</span></td>
+                  <td>RAR Cluj</td>
+                  <td>22.05.2025</td>
+                  <td>12 luni</td>
+                  <td style="color:#dc2626;font-weight:600">22.05.2026</td>
+                  <td>220 RON</td>
+                  <td><span class="mk-badge mb-red">⚠ Critică</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm admin-only">✏️</button></td>
+                </tr>
+                <tr>
+                  <td><strong>B-456-DEF</strong><br><span style="color:#94a3b8;font-size:10px">VW Golf</span></td>
+                  <td>AutoTest București</td>
+                  <td>10.11.2025</td>
+                  <td>12 luni</td>
+                  <td>10.11.2026</td>
+                  <td>165 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Valabil</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm admin-only">✏️</button></td>
+                </tr>
+                <tr>
+                  <td><strong>CJ-789-GHI</strong><br><span style="color:#94a3b8;font-size:10px">Renault Megane</span></td>
+                  <td>RAR București</td>
+                  <td>03.02.2025</td>
+                  <td>12 luni</td>
+                  <td style="color:#dc2626;font-weight:600">03.02.2026</td>
+                  <td>175 RON</td>
+                  <td><span class="mk-badge mb-red">✗ Expirat</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm admin-only">✏️</button></td>
+                </tr>
+                <tr>
+                  <td><strong>IS-321-JKL</strong><br><span style="color:#94a3b8;font-size:10px">Toyota Yaris</span></td>
+                  <td>AutoPro Iași</td>
+                  <td>08.09.2025</td>
+                  <td>24 luni</td>
+                  <td>08.09.2027</td>
+                  <td>190 RON</td>
+                  <td><span class="mk-badge mb-green">✓ Valabil</span></td>
+                  <td><button class="mk-btn mk-btn-ghost mk-btn-sm admin-only">✏️</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div id="itp-panel" style="display:none"></div>
+        </div>
+
+        <!-- ── SIGN IN ── -->
+        <div id="ms-signin" class="ms ms-active">
+          <div class="ms-title">Sign In</div>
+          <div class="ms-sub">Autentifică-te în contul tău</div>
+
+          <div id="mk-login-err" class="mk-alert mk-red" style="display:none;margin-bottom:14px">
+            <span class="mk-ico">⚠️</span>
+            <span class="mk-msg">Email sau parolă incorectă. Încearcă din nou.</span>
+          </div>
+
+          <div class="mk-form" style="max-width:340px">
+            <div class="mk-field" style="margin-bottom:12px">
+              <label>Email</label>
+              <input id="mk-email" class="mk-input" type="email" placeholder="admin@parcauto.ro" style="font-size:13px;padding:9px 11px"/>
+            </div>
+            <div class="mk-field" style="margin-bottom:14px">
+              <label>Parolă</label>
+              <input id="mk-pass" class="mk-input" type="password" placeholder="••••••••" style="font-size:13px;padding:9px 11px"/>
+            </div>
+            <button class="mk-btn mk-btn-blue" onclick="mockLogin()" style="width:100%;padding:10px;font-size:13px;justify-content:center">🔑 Autentifică-te</button>
+            <div style="text-align:center;margin-top:10px;font-size:11px;color:#64748b">
+              Nu ai cont? <a onclick="msShow('signup',document.getElementById('sb-signup'))" style="color:#2563eb;cursor:pointer;font-weight:600">Creează cont</a>
+            </div>
+
+            <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:11px 13px;margin-top:16px">
+              <div style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#2563eb;margin-bottom:8px">Conturi demo — click pentru completare automată</div>
+              <div onclick="mockFill('admin@parcauto.ro','admin123')" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:7px 9px;cursor:pointer;margin-bottom:5px" onmouseover="this.style.borderColor='#2563eb'" onmouseout="this.style.borderColor='#e2e8f0'">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#7c3aed,#5b21b6);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;flex-shrink:0">A</div>
+                  <div>
+                    <div style="font-size:11px;font-weight:600;color:#0f172a">Administrator</div>
+                    <div style="font-size:10px;color:#94a3b8">admin@parcauto.ro · admin123</div>
+                  </div>
+                </div>
+                <span style="font-size:9px;font-weight:700;text-transform:uppercase;background:#ede9fe;color:#5b21b6;padding:2px 6px;border-radius:4px">Admin</span>
+              </div>
+              <div onclick="mockFill('user@parcauto.ro','user123')" style="display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid #e2e8f0;border-radius:6px;padding:7px 9px;cursor:pointer" onmouseover="this.style.borderColor='#2563eb'" onmouseout="this.style.borderColor='#e2e8f0'">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#0891b2,#0e7490);display:flex;align-items:center;justify-content:center;color:#fff;font-size:10px;font-weight:800;flex-shrink:0">U</div>
+                  <div>
+                    <div style="font-size:11px;font-weight:600;color:#0f172a">Ion Popescu</div>
+                    <div style="font-size:10px;color:#94a3b8">user@parcauto.ro · user123</div>
+                  </div>
+                </div>
+                <span style="font-size:9px;font-weight:700;text-transform:uppercase;background:#cffafe;color:#0e7490;padding:2px 6px;border-radius:4px">User</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ── SIGN UP ── -->
+        <div id="ms-signup" class="ms">
+          <div class="ms-title">Sign Up</div>
+          <div class="ms-sub">Creează un cont nou</div>
+
+          <div id="mk-reg-err" class="mk-alert mk-red" style="display:none;margin-bottom:14px">
+            <span class="mk-ico">⚠️</span>
+            <span class="mk-msg">Completează toate câmpurile obligatorii.</span>
+          </div>
+          <div id="mk-reg-ok" class="mk-alert mk-green" style="display:none;margin-bottom:14px">
+            <span class="mk-ico">✅</span>
+            <span class="mk-msg">Cont creat! Te redirecționez la Sign In...</span>
+          </div>
+
+          <div class="mk-form" style="max-width:340px">
+            <div class="mk-field" style="margin-bottom:12px">
+              <label>Nume complet</label>
+              <input id="mk-reg-name" class="mk-input" type="text" placeholder="Ion Popescu" style="font-size:13px;padding:9px 11px"/>
+            </div>
+            <div class="mk-field" style="margin-bottom:12px">
+              <label>Email</label>
+              <input id="mk-reg-email" class="mk-input" type="email" placeholder="ion@parcauto.ro" style="font-size:13px;padding:9px 11px"/>
+            </div>
+            <div class="mk-field" style="margin-bottom:12px">
+              <label>Parolă</label>
+              <input id="mk-reg-pass" class="mk-input" type="password" placeholder="••••••••" style="font-size:13px;padding:9px 11px"/>
+            </div>
+            <div class="mk-field" style="margin-bottom:14px">
+              <label>Rol</label>
+              <select id="mk-reg-role" class="mk-select" style="font-size:13px;padding:9px 11px">
+                <option value="user">Utilizator (vizualizare)</option>
+                <option value="admin">Administrator (acces complet)</option>
+              </select>
+            </div>
+            <button class="mk-btn mk-btn-blue" onclick="mockRegister()" style="width:100%;padding:10px;font-size:13px;justify-content:center">📝 Creează cont</button>
+            <div style="text-align:center;margin-top:10px;font-size:11px;color:#64748b">
+              Ai deja cont? <a onclick="msShow('signin',document.getElementById('sb-signin'))" style="color:#2563eb;cursor:pointer;font-weight:600">Sign In</a>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /mock-main -->
+    </div><!-- /mock-shell -->
+  </div><!-- /mock-browser -->
+  </div><!-- /mv-web -->
+
+  <!-- ════ PHONE VIEW ════ -->
+  <div id="mv-phone">
+    <div class="mock-phone-frame">
+      <div class="mph-dyn-island"></div>
+      <div class="mph-screen">
+
+        <!-- status bar -->
+        <div class="mph-statusbar">
+          <span>9:41</span>
+          <span>📶 🔋</span>
+        </div>
+
+        <!-- top bar (changes per screen) -->
+        <div class="mph-topbar" id="mph-topbar-title">🚗 Dashboard</div>
+
+        <!-- scrollable content -->
+        <div class="mph-main">
+
+          <!-- ── DASH ── -->
+          <div class="mph-pane mph-on" id="mph-dash">
+            <div class="ph-alert pha-r"><span class="phi">🛡️</span><div><strong>B-123-ABC</strong> — RCA expiră în <strong>5 zile</strong></div></div>
+            <div class="ph-alert pha-r"><span class="phi">🛣️</span><div><strong>CJ-456-DEF</strong> — Rovinieta expiră în <strong>3 zile</strong></div></div>
+            <div class="ph-alert pha-a"><span class="phi">👨‍✈️</span><div><strong>Ion Popescu</strong> — Permis expiră în <strong>28 zile</strong></div></div>
+            <div class="ph-stats">
+              <div class="ph-stat"><div class="psn">5</div><div class="psl">Mașini</div></div>
+              <div class="ph-stat"><div class="psn">3</div><div class="psl">Șoferi</div></div>
+              <div class="ph-stat"><div class="psn" style="color:#dc2626">3</div><div class="psl">Alerte</div></div>
+              <div class="ph-stat"><div class="psn">2</div><div class="psl">Service / lună</div></div>
+            </div>
+            <div class="ph-section">Intervenții recente</div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">B-123-ABC</div><div class="ph-card-sub">Dacia Duster · 10.05.2026</div></div><span class="mk-badge mb-blue">Revizie</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">45.200 km</span><span class="mk-badge mb-green">450 RON</span></div>
+            </div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">CJ-789-GHI</div><div class="ph-card-sub">Renault Megane · 02.05.2026</div></div><span class="mk-badge mb-amber">Reparație</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">62.100 km</span><span class="mk-badge mb-green">1.200 RON</span></div>
+            </div>
+          </div>
+
+          <!-- ── MAȘINI ── -->
+          <div class="mph-pane" id="mph-masini">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+              <button class="mk-btn mk-btn-blue mk-btn-sm">＋ Adaugă</button>
+            </div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">B-123-ABC</div><div class="ph-card-sub">Dacia Duster · 2021</div></div><button class="ph-btn-ghost">👁</button></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">45.200 km</span><span class="mk-badge mb-blue">Diesel</span><span class="mk-badge mb-green">Ion Popescu</span></div>
+            </div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">B-456-DEF</div><div class="ph-card-sub">VW Golf VII · 2019</div></div><button class="ph-btn-ghost">👁</button></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">87.400 km</span><span class="mk-badge mb-blue">Diesel</span><span class="mk-badge mb-green">Maria Ionescu</span></div>
+            </div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">CJ-789-GHI</div><div class="ph-card-sub">Renault Megane · 2020</div></div><button class="ph-btn-ghost">👁</button></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">62.100 km</span><span class="mk-badge mb-blue">Diesel</span><span class="mk-badge mb-green">SC TechCorp</span></div>
+            </div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">IS-321-JKL</div><div class="ph-card-sub">Toyota Yaris · 2022</div></div><button class="ph-btn-ghost">👁</button></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">18.900 km</span><span class="mk-badge mb-purple">Hibrid</span><span class="mk-badge mb-green">Al. Popa</span></div>
+            </div>
+          </div>
+
+          <!-- ── SERVICE ── -->
+          <div class="mph-pane" id="mph-service">
+            <div class="ph-field"><label>Mașina</label><select class="ph-select"><option>B-123-ABC — Dacia Duster</option><option>B-456-DEF — VW Golf</option></select></div>
+            <div class="ph-row2">
+              <div class="ph-field"><label>Data</label><input class="ph-input" value="14.05.2026" readonly/></div>
+              <div class="ph-field"><label>Km</label><input class="ph-input" value="45.200" readonly/></div>
+            </div>
+            <div class="ph-field"><label>Tip</label><select class="ph-select"><option>Revizie periodică</option><option>Reparație</option><option>Accident</option></select></div>
+            <div class="ph-divider"></div>
+            <div class="ph-section">Piese și manoperă</div>
+            <div class="ph-piese-row">
+              <input class="ph-input" value="Filtru ulei" readonly style="flex:2"/>
+              <input class="ph-input" value="1" readonly style="flex:.6"/>
+              <input class="ph-input" value="45 RON" readonly style="flex:1;color:#1d4ed8;font-weight:600"/>
+            </div>
+            <div class="ph-piese-row">
+              <input class="ph-input" value="Ulei 5W40 5L" readonly style="flex:2"/>
+              <input class="ph-input" value="5" readonly style="flex:.6"/>
+              <input class="ph-input" value="175 RON" readonly style="flex:1;color:#1d4ed8;font-weight:600"/>
+            </div>
+            <div class="ph-piese-row">
+              <input class="ph-input" value="Manoperă" readonly style="flex:2"/>
+              <input class="ph-input" value="1" readonly style="flex:.6"/>
+              <input class="ph-input" value="150 RON" readonly style="flex:1;color:#1d4ed8;font-weight:600"/>
+            </div>
+            <button class="ph-btn-ghost" style="margin-bottom:10px">＋ Adaugă rând</button>
+            <div class="ph-total-row"><span class="ptl">Total</span><span class="ptv">370 RON</span></div>
+            <button class="ph-btn-full">💾 Salvează</button>
+          </div>
+
+          <!-- ── ASIGURĂRI ── -->
+          <div class="mph-pane" id="mph-asigurari">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+              <button class="mk-btn mk-btn-blue mk-btn-sm">＋ Adaugă</button>
+            </div>
+            <div class="ph-card" style="border-left:3px solid #dc2626">
+              <div class="ph-card-head"><div><div class="ph-card-title">B-123-ABC</div><div class="ph-card-sub">Allianz · RCA-2024-0012</div></div><span class="mk-badge mb-red">⚠ Critică</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-blue">RCA</span><span class="mk-badge mb-slate">Expiră 19.05.26</span><span class="mk-badge mb-green">650 RON</span></div>
+              <button class="ph-btn-ghost" style="margin-top:8px">📄 Descarcă PDF</button>
+            </div>
+            <div class="ph-card" style="border-left:3px solid #16a34a">
+              <div class="ph-card-head"><div><div class="ph-card-title">B-456-DEF</div><div class="ph-card-sub">Generali · CSC-2023-0456</div></div><span class="mk-badge mb-green">✓ Activă</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-purple">CASCO</span><span class="mk-badge mb-slate">Expiră 15.07.26</span><span class="mk-badge mb-green">2.400 RON</span></div>
+              <button class="ph-btn-ghost" style="margin-top:8px">📄 Descarcă PDF</button>
+            </div>
+            <div class="ph-card" style="border-left:3px solid #dc2626">
+              <div class="ph-card-head"><div><div class="ph-card-title">CJ-789-GHI</div><div class="ph-card-sub">NN Asigurări · RCA-2024-0089</div></div><span class="mk-badge mb-red">✗ Expirată</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-blue">RCA</span><span class="mk-badge mb-slate">Expirat 01.03.26</span><span class="mk-badge mb-slate">580 RON</span></div>
+            </div>
+          </div>
+
+          <!-- ── ANVELOPE ── -->
+          <div class="mph-pane" id="mph-anvelope">
+            <div class="ph-field"><label>Mașina</label><select class="ph-select"><option>B-123-ABC — Dacia Duster</option><option>B-456-DEF — VW Golf</option></select></div>
+            <div class="ph-section">🔵 Montate acum</div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">Michelin Primacy 4</div><div class="ph-card-sub">205/55 R16 · Roți complete</div></div><span class="mk-badge mb-blue">Vară</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">Montat 15.04.26</span><span class="mk-badge mb-slate">41.200 km</span></div>
+            </div>
+            <div class="ph-section">⚪ Depozitate</div>
+            <div class="ph-card">
+              <div class="ph-card-head"><div><div class="ph-card-title">Bridgestone Blizzak</div><div class="ph-card-sub">205/55 R16 · Anvelope</div></div><span class="mk-badge mb-slate">Iarnă</span></div>
+              <div class="ph-card-row"><span class="mk-badge mb-slate">Demontat 15.04.26</span><span class="mk-badge mb-slate">41.200 km</span></div>
+            </div>
+            <div class="ph-divider"></div>
+            <button class="ph-btn-full" style="background:#475569">🔄 Înregistrează schimb</button>
+          </div>
+
+          <!-- ── SUPPORT ── -->
+          <div class="mph-pane" id="mph-support">
+            <div class="ph-section" style="margin-top:0">📞 Contact</div>
+
+            <div class="ph-card">
+              <div class="ph-card-head">
+                <div><div class="ph-card-title">Telefon suport</div><div class="ph-card-sub">L–V · 09:00–18:00</div></div>
+                <span class="mk-badge mb-green">● Online</span>
+              </div>
+              <div style="font-size:13px;font-weight:600;color:#2563eb;margin-top:4px">+40 721 000 111</div>
+            </div>
+
+            <div class="ph-card">
+              <div class="ph-card-head">
+                <div><div class="ph-card-title">Email</div><div class="ph-card-sub">Răspuns în 24h</div></div>
+                <span class="mk-badge mb-green">● Activ</span>
+              </div>
+              <div style="font-size:12px;font-weight:600;color:#2563eb;margin-top:4px">support@parcauto.ro</div>
+            </div>
+
+            <div class="ph-card">
+              <div class="ph-card-head">
+                <div><div class="ph-card-title">Chat live</div><div class="ph-card-sub">3 agenți disponibili</div></div>
+                <span class="mk-badge mb-green">● Online</span>
+              </div>
+              <button class="ph-btn-full" style="margin-top:6px">💬 Deschide chat</button>
+            </div>
+
+            <div class="ph-section">✍️ Feedback rapid</div>
+            <div class="ph-card">
+              <div class="ph-field"><label>Subiect</label><select class="ph-select"><option>— Alege —</option><option>Problemă tehnică</option><option>Sugestie</option><option>Întrebare</option></select></div>
+              <div class="ph-field"><label>Mesaj</label><textarea class="ph-input" style="height:64px;resize:none;font-family:inherit" placeholder="Descrie problema..."></textarea></div>
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:4px">
+                <div class="star-rating sm">
+                  <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+                </div>
+                <button class="mk-btn mk-btn-blue mk-btn-sm" onclick="this.textContent='✓ Trimis!';this.style.background='#16a34a'">📤 Trimite</button>
+              </div>
+            </div>
+
+            <div class="ph-section">❓ FAQ</div>
+            <div class="faq-item" style="border-radius:10px;margin-bottom:6px">
+              <button class="faq-q" style="font-size:12px;padding:11px 14px" onclick="faqToggle(this)"><span>Cum adaug o mașină?</span><span class="faq-arrow">▼</span></button>
+              <div class="faq-a" style="font-size:11.5px">Mergi la <code>Mașini → Adaugă</code>, completează datele și asociază proprietarul.</div>
+            </div>
+            <div class="faq-item" style="border-radius:10px;margin-bottom:6px">
+              <button class="faq-q" style="font-size:12px;padding:11px 14px" onclick="faqToggle(this)"><span>Cum înregistrez service?</span><span class="faq-arrow">▼</span></button>
+              <div class="faq-a" style="font-size:11.5px">Mergi la <code>Service → Adaugă</code>, selectează mașina, data, km și adaugă piesele cu costuri.</div>
+            </div>
+            <div class="faq-item" style="border-radius:10px;margin-bottom:6px">
+              <button class="faq-q" style="font-size:12px;padding:11px 14px" onclick="faqToggle(this)"><span>Alertele nu apar?</span><span class="faq-arrow">▼</span></button>
+              <div class="faq-a" style="font-size:11.5px">Verifică că <code>includes/alerts.php</code> este inclus în <code>index.php</code> și că datele de expirare sunt corecte.</div>
+            </div>
+          </div>
+
+        </div><!-- /mph-main -->
+
+        <!-- bottom nav -->
+        <div class="mph-bottomnav">
+          <div class="mph-navitem mn-on" onclick="mphShow('dash',this)"><span class="mn-ico" style="font-size:16px">🏠</span><span class="mn-lbl">Acasă</span></div>
+          <div class="mph-navitem" onclick="mphShow('masini',this)"><span class="mn-ico" style="font-size:16px">🚗</span><span class="mn-lbl">Mașini</span></div>
+          <div class="mph-navitem" onclick="mphShow('service',this)"><span class="mn-ico" style="font-size:16px">🔧</span><span class="mn-lbl">Service</span></div>
+          <div class="mph-navitem" onclick="mphShow('asigurari',this)"><span class="mn-ico" style="font-size:16px">🛡️</span><span class="mn-lbl">Asigurări</span></div>
+          <div class="mph-navitem" onclick="mphShow('anvelope',this)"><span class="mn-ico" style="font-size:16px">⚙️</span><span class="mn-lbl">Anvelope</span></div>
+          <div class="mph-navitem" onclick="mphShow('support',this)"><span class="mn-ico" style="font-size:16px">💬</span><span class="mn-lbl">Support</span></div>
+        </div>
+
+      </div><!-- /mph-screen -->
+      <div class="mph-homeind"></div>
+    </div><!-- /mock-phone-frame -->
+  </div><!-- /mv-phone -->
+
+  </div><!-- /mv-container -->
+
+</div>
+</section>
+
+<div class="sep"></div>
+
+<!-- ══════════════ SUPPORT ══════════════ -->
+<section id="support">
+<div class="wrap">
+  <div class="sh">
+    <div class="ico">💬</div>
+    <div>
+      <h2>Customer Support</h2>
+      <p>Contact, feedback și întrebări frecvente despre Parc Auto Manager</p>
+    </div>
+  </div>
+
+  <!-- ─── CONTACT ─── -->
+  <div class="section-title" style="font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+    📞 Informații de contact
+  </div>
+
+  <div class="sup-grid" style="margin-bottom:40px">
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#eff6ff">📞</div>
+      <h4>Telefon suport</h4>
+      <p>Luni – Vineri<br>09:00 – 18:00</p>
+      <a href="#">+40 721 000 111</a>
+      <a href="#">+40 721 000 222</a>
+      <span class="sup-badge online">● Online acum</span>
+    </div>
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#f0fdf4">📧</div>
+      <h4>Email</h4>
+      <p>Răspuns în maxim<br>24 de ore lucrătoare</p>
+      <a href="#">support@parcauto.ro</a>
+      <a href="#">contact@parcauto.ro</a>
+      <span class="sup-badge online">● Activ</span>
+    </div>
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#fefce8">🕐</div>
+      <h4>Program de lucru</h4>
+      <p>
+        <strong>Luni – Vineri:</strong> 09:00 – 18:00<br>
+        <strong>Sâmbătă:</strong> 10:00 – 14:00<br>
+        <strong>Duminică:</strong> Închis
+      </p>
+      <span class="sup-badge offline">● Închis acum</span>
+    </div>
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#fdf4ff">📍</div>
+      <h4>Sediu</h4>
+      <p>
+        Str. Victoriei nr. 14<br>
+        Sector 1, București<br>
+        Cod poștal: 010063
+      </p>
+      <a href="#">Deschide în Maps →</a>
+    </div>
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#fff7ed">💬</div>
+      <h4>Chat live</h4>
+      <p>Disponibil în aplicație pentru utilizatorii cu abonament activ.</p>
+      <a href="#">Deschide chat →</a>
+      <span class="sup-badge online">● 3 agenți disponibili</span>
+    </div>
+
+    <div class="sup-card">
+      <div class="sc-ico" style="background:#f0f9ff">📚</div>
+      <h4>Documentație</h4>
+      <p>Ghiduri de utilizare, tutoriale video și manual complet al aplicației.</p>
+      <a href="#">docs.parcauto.ro →</a>
+    </div>
+
+  </div>
+
+  <!-- ─── FEEDBACK ─── -->
+  <div class="section-title" style="font-size:15px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px">
+    ✍️ Trimite feedback
+  </div>
+
+  <div class="fb-wrap">
+    <div class="fb-row">
+      <div class="fb-field">
+        <label>Nume complet</label>
+        <input class="fb-input" type="text" placeholder="Ion Popescu"/>
+      </div>
+      <div class="fb-field">
+        <label>Adresă email</label>
+        <input class="fb-input" type="email" placeholder="ion@exemplu.ro"/>
+      </div>
+    </div>
+
+    <div class="fb-row">
+      <div class="fb-field">
+        <label>Subiect</label>
+        <select class="fb-select">
+          <option value="">— Alege subiectul —</option>
+          <option>Problemă tehnică</option>
+          <option>Sugestie de îmbunătățire</option>
+          <option>Întrebare despre funcționalitate</option>
+          <option>Eroare în date</option>
+          <option>Altele</option>
+        </select>
+      </div>
+      <div class="fb-field">
+        <label>Modul afectat</label>
+        <select class="fb-select">
+          <option value="">— Alege modulul —</option>
+          <option>Dashboard</option>
+          <option>Gestiune Mașini</option>
+          <option>Gestiune Șoferi</option>
+          <option>Service</option>
+          <option>Asigurări</option>
+          <option>Viniete</option>
+          <option>Anvelope</option>
+          <option>General</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fb-row full">
+      <div class="fb-field">
+        <label>Mesaj</label>
+        <textarea class="fb-textarea" placeholder="Descrie în detaliu problema sau sugestia ta..."></textarea>
+      </div>
+    </div>
+
+    <div class="fb-field" style="margin-bottom:20px">
+      <label>Evaluare generală a aplicației</label>
+      <div class="star-rating">
+        <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+      </div>
+    </div>
+
+    <button class="fb-submit" onclick="this.textContent='✓ Trimis cu succes!'; this.style.background='#16a34a'; this.disabled=true">
+      📤 Trimite feedback
+    </button>
+  </div>
+
+  <!-- ─── FAQ ─── -->
+  <div class="section-title" style="font-size:15px;font-weight:700;margin:40px 0 16px;display:flex;align-items:center;gap:8px">
+    ❓ Întrebări frecvente
+  </div>
+
+  <div class="faq-list">
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum adaug o mașină nouă în sistem?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Mergi la <code>Mașini → Adaugă mașină</code>. Completează câmpurile obligatorii: număr de înmatriculare, marcă, model, an fabricație și tip motor. Asociază un proprietar existent sau creează unul nou. După salvare poți adăuga imediat asigurarea și rovinieta.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum înregistrez o intervenție service?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Navighează la <code>Service → Adaugă intervenție</code>. Selectează mașina, introdu data, kilometrajul la intrare și tipul intervenției. Adaugă rânduri cu piese și manoperă — costul total se calculează automat. Salvează și vei putea vedea istoricul complet în pagina mașinii.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum descarc o poliță de asigurare în PDF?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Din pagina <code>Asigurări</code>, găsește polița dorită în tabel și apasă butonul <code>📄 PDF</code> din coloana acțiuni. Fișierul PDF trebuie să fi fost încărcat la adăugarea poliței. Dacă butonul nu este activ, editează polița și încarcă documentul.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Alertele de expirare nu apar pe dashboard. Ce fac?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Alertele se generează automat la fiecare autentificare din fișierul <code>includes/alerts.php</code>. Verifică că datele de expirare sunt completate corect în baza de date și că serverul MySQL rulează. Dacă problema persistă, verifică că <code>includes/alerts.php</code> este inclus în <code>index.php</code>.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Pot asocia mai mulți șoferi la aceeași mașină?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Da. Relația este N:M prin tabela <code>masina_sofer</code>. Fiecare asociere are o dată de start și o dată de sfârșit opțională. Poți vedea toți șoferii care au condus o mașină și în ce perioadă accesând <code>Mașini → Vezi → tab Șoferi</code>.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum înregistrez un schimb de anvelope?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Din <code>Anvelope → Înregistrează schimb</code>. Selectează mașina, data și kilometrajul. Alege setul care se montează și setul care se demontează. Sistemul actualizează automat starea fiecărui set: <em>montat</em> sau <em>depozitat</em>.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum generez un raport de service pentru Business Analyst?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Accesează <code>Service → Raport</code>. Filtrează după mașină, perioadă și tip intervenție. Raportul afișează toate intervențiile cu detalii complete și costul total. Utilizatorii cu rolul <em>Business Analyst</em> au acces direct la această pagină fără a putea modifica date.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Ce tipuri de asigurări pot înregistra?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Sistemul suportă două tipuri: <code>RCA</code> (asigurare obligatorie de răspundere civilă) și <code>CASCO</code> (asigurare facultativă). O mașină poate avea simultan atât RCA cât și CASCO. Alertele de expirare funcționează independent pentru fiecare poliță.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum adaug o rovinieta pentru o altă țară?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Din <code>Viniete → Adaugă</code>, selectează mașina și alege țara din lista dropdown. Completează tipul (zilnic, lunar, trimestrial, anual), datele de valabilitate și costul. Poți adăuga oricâte viniete per mașină pentru țări diferite.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <button class="faq-q" onclick="faqToggle(this)">
+        <span>Cum resetez parola unui utilizator?</span>
+        <span class="faq-arrow">▼</span>
+      </button>
+      <div class="faq-a">
+        Doar utilizatorii cu rolul <code>Admin</code> pot reseta parolele. Mergi la <code>Utilizatori → Editare</code>, introdu noua parolă — aceasta se va stoca automat cu <code>password_hash()</code>. Nu există recuperare automată prin email în versiunea curentă.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  Parc Auto Manager &nbsp;·&nbsp; HTML · CSS · JS · PHP · MySQL &nbsp;·&nbsp; 2026
+</footer>
+
+<script>
+  // Active nav link on scroll
+  const secs = ['module','tech','db','fisiere','fluxuri','alerte','roluri','mockup','support'];
+  const links = document.querySelectorAll('nav a[href^="#"]');
+
+  function setActive() {
+    let cur = '';
+    secs.forEach(id => {
+      const el = document.getElementById(id);
+      if (el && window.scrollY >= el.offsetTop - 80) cur = id;
+    });
+    links.forEach(a => {
+      a.classList.toggle('on', a.getAttribute('href') === '#' + cur);
+    });
+  }
+
+  window.addEventListener('scroll', setActive, { passive: true });
+  setActive();
+
+  // ── AUTH ──
+  const MOCK_ACCOUNTS = {
+    'admin@parcauto.ro': { pass: 'admin123', role: 'admin', name: 'Administrator' },
+    'user@parcauto.ro':  { pass: 'user123',  role: 'user',  name: 'Ion Popescu'   }
+  };
+
+  const URL_MAP = {
+    signin:'localhost/parc-auto/login.php', signup:'localhost/parc-auto/register.php',
+    dash:'localhost/parc-auto/index.php',   masini:'localhost/parc-auto/masini/',
+    soferi:'localhost/parc-auto/soferi/',   service:'localhost/parc-auto/service/',
+    asigurari:'localhost/parc-auto/asigurari/', viniete:'localhost/parc-auto/viniete/',
+    anvelope:'localhost/parc-auto/anvelope/', itp:'localhost/parc-auto/itp/',
+    support:'localhost/parc-auto/support.php'
+  };
+
+  function msShow(id, link) {
+    document.querySelectorAll('.ms').forEach(s => s.classList.remove('ms-active'));
+    document.querySelectorAll('.mock-sb a').forEach(a => a.classList.remove('ms-on'));
+    document.getElementById('ms-' + id).classList.add('ms-active');
+    if (link) link.classList.add('ms-on');
+    const bar = document.getElementById('mk-url-bar');
+    if (bar) bar.textContent = URL_MAP[id] || 'localhost/parc-auto/';
+  }
+
+  function mockFill(email, pass) {
+    document.getElementById('mk-email').value = email;
+    document.getElementById('mk-pass').value  = pass;
+    document.getElementById('mk-login-err').style.display = 'none';
+  }
+
+  function mockLogin() {
+    const email = document.getElementById('mk-email').value.trim().toLowerCase();
+    const pass  = document.getElementById('mk-pass').value;
+    const err   = document.getElementById('mk-login-err');
+    const acc   = MOCK_ACCOUNTS[email];
+
+    if (!acc || acc.pass !== pass) { err.style.display = 'flex'; return; }
+    err.style.display = 'none';
+
+    const isAdmin = acc.role === 'admin';
+    document.getElementById('mk-user-info').innerHTML =
+      `<div style="font-size:11px;font-weight:600;color:#f1f5f9;margin-bottom:3px">${acc.name}</div>` +
+      `<span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 6px;border-radius:4px;${isAdmin?'background:#ede9fe;color:#5b21b6':'background:#cffafe;color:#0e7490'}">${isAdmin?'Admin':'User'}</span>`;
+
+    document.querySelectorAll('.admin-only').forEach(el => {
+      el.style.display = isAdmin ? '' : 'none';
+    });
+
+    currentRole = acc.role;
+    if (isAdmin) renderTickets();
+    renderAsig(); renderItp(); renderViniete(); renderMasini(); renderSoferi();
+    msShow('dash', document.getElementById('sb-dash'));
+  }
+
+  function mockRegister() {
+    const name  = document.getElementById('mk-reg-name').value.trim();
+    const email = document.getElementById('mk-reg-email').value.trim().toLowerCase();
+    const pass  = document.getElementById('mk-reg-pass').value;
+    const role  = document.getElementById('mk-reg-role').value;
+    const err   = document.getElementById('mk-reg-err');
+    const ok    = document.getElementById('mk-reg-ok');
+
+    if (!name || !email || !pass) { err.style.display = 'flex'; ok.style.display = 'none'; return; }
+    err.style.display = 'none';
+    ok.style.display  = 'flex';
+    MOCK_ACCOUNTS[email] = { pass, role, name };
+
+    setTimeout(() => {
+      ok.style.display = 'none';
+      document.getElementById('mk-email').value = email;
+      document.getElementById('mk-pass').value  = '';
+      msShow('signin', document.getElementById('sb-signin'));
+    }, 1400);
+  }
+
+  const titleMap = { dash:'🚗 Dashboard', masini:'🚗 Mașini', soferi:'👨‍✈️ Șoferi', service:'🔧 Service', asigurari:'🛡️ Asigurări', viniete:'🛣️ Viniete', anvelope:'⚙️ Anvelope', itp:'🔍 ITP', support:'💬 Support', signin:'🔐 Sign In', signup:'📝 Sign Up' };
+
+  function mphShow(id, navItem) {
+    document.querySelectorAll('.mph-pane').forEach(p => p.classList.remove('mph-on'));
+    document.querySelectorAll('.mph-navitem').forEach(n => n.classList.remove('mn-on'));
+    document.getElementById('mph-' + id).classList.add('mph-on');
+    navItem.classList.add('mn-on');
+    document.getElementById('mph-topbar-title').textContent = titleMap[id] || '';
+  }
+
+  document.querySelectorAll('.star-rating').forEach(wrap => {
+    const stars = [...wrap.querySelectorAll('span')];
+    let sel = 0;
+    stars.forEach((s, i) => {
+      s.addEventListener('mouseenter', () => light(i + 1));
+      s.addEventListener('click',      () => { sel = i + 1; light(sel); wrap.dataset.sel = sel; });
+    });
+    wrap.addEventListener('mouseleave', () => light(sel));
+    function light(n) {
+      stars.forEach((s, i) => s.classList.toggle('lit', i < n));
+    }
+  });
+
+  function faqToggle(btn) {
+    const item = btn.closest('.faq-item');
+    const list = item.parentElement;
+    const wasOpen = item.classList.contains('open');
+    list.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  }
+
+  // ── SUPPORT TICKETS ──
+  const TICKETS = [
+    { id:'#001', user:'Ion Popescu',    email:'user@parcauto.ro',  subj:'Problemă tehnică', mod:'Asigurări', msg:'Nu pot adăuga o poliță nouă. Primesc eroare la salvare când completez toate câmpurile.',          date:'14.05.2026 · 09:14', status:'nou'         },
+    { id:'#002', user:'Maria Ionescu',  email:'maria@parcauto.ro', subj:'Întrebare',         mod:'ITP',       msg:'Cum pot exporta raportul ITP pentru toate mașinile din flotă? Nu găsesc opțiunea.',              date:'13.05.2026 · 17:32', status:'nou'         },
+    { id:'#003', user:'Alexandru Popa', email:'alex@parcauto.ro',  subj:'Sugestie',          mod:'Dashboard', msg:'Ar fi util un grafic al costurilor lunare direct pe ecranul principal, lângă statistici.',       date:'12.05.2026 · 11:05', status:'in_progress' },
+    { id:'#004', user:'Ion Popescu',    email:'user@parcauto.ro',  subj:'Problemă tehnică',  mod:'Anvelope',  msg:'Istoricul de schimb anvelope nu se afișează corect pentru mașina CJ-789-GHI după ultima revizie.', date:'10.05.2026 · 08:50', status:'rezolvat'    },
+  ];
+  let activeTicket = null;
+
+  function renderTickets() {
+    const tbody    = document.getElementById('tickets-tbody');
+    const badge    = document.getElementById('supp-badge');
+    const newBadge = document.getElementById('new-tickets-badge');
+    const notif    = document.getElementById('supp-notif');
+    if (!tbody) return;
+
+    const newCount = TICKETS.filter(t => t.status === 'nou').length;
+    if (badge)    { badge.textContent = newCount; badge.style.display = newCount > 0 ? '' : 'none'; }
+    if (newBadge) newBadge.textContent = `${newCount} noi`;
+    if (notif)    notif.style.display = newCount > 0 ? 'flex' : 'none';
+
+    const sColor = { nou:'mb-red', in_progress:'mb-amber', rezolvat:'mb-green' };
+    const sLabel = { nou:'🔴 Nou', in_progress:'🟡 În lucru', rezolvat:'✅ Rezolvat' };
+
+    tbody.innerHTML = TICKETS.map((t, i) => `
+      <tr>
+        <td><strong>${t.id}</strong></td>
+        <td>${t.user}<br><span style="color:#94a3b8;font-size:10px">${t.email}</span></td>
+        <td>${t.subj}<br><span style="color:#94a3b8;font-size:10px">${t.mod}</span></td>
+        <td style="white-space:nowrap;font-size:11px">${t.date}</td>
+        <td><span class="mk-badge ${sColor[t.status]}">${sLabel[t.status]}</span></td>
+        <td>${t.status !== 'rezolvat'
+          ? `<button class="mk-btn mk-btn-blue mk-btn-sm" onclick="openTicket(${i})">💬 Răspunde</button>`
+          : '<span style="font-size:11px;color:#94a3b8">—</span>'
+        }</td>
+      </tr>`).join('');
+  }
+
+  function openTicket(idx) {
+    activeTicket = idx;
+    const t = TICKETS[idx];
+    document.getElementById('reply-ticket-title').textContent   = `Răspunde la ${t.id} — ${t.user}`;
+    document.getElementById('reply-original-msg').textContent   = t.msg;
+    document.getElementById('reply-original-meta').textContent  = `${t.user} · ${t.email} · ${t.date}`;
+    document.getElementById('reply-textarea').value             = '';
+    document.getElementById('reply-textarea').style.borderColor = '';
+    const panel = document.getElementById('reply-panel');
+    panel.style.display = 'block';
+    panel.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+
+  function closeReply() {
+    document.getElementById('reply-panel').style.display = 'none';
+    activeTicket = null;
+  }
+
+  function submitFeedback() {
+    const nume = document.getElementById('fb-nume').value.trim();
+    const subj = document.getElementById('fb-subj').value;
+    const msg  = document.getElementById('fb-msg').value.trim();
+    const err  = document.getElementById('fb-err');
+    const ok   = document.getElementById('fb-ok');
+    const fields = document.getElementById('fb-fields');
+
+    if (!nume || !subj || !msg) { err.style.display = 'flex'; return; }
+    err.style.display = 'none';
+
+    const email = document.getElementById('fb-email').value.trim() || '(nefurnizat)';
+    const mod   = document.getElementById('fb-mod').value || 'General';
+    const stars = document.getElementById('fb-stars');
+    const rating = stars ? (stars.dataset.sel || '0') : '0';
+
+    const now = new Date();
+    const date = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()} · ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    const newId = '#' + String(TICKETS.length + 1).padStart(3,'0');
+
+    TICKETS.unshift({ id:newId, user:nume, email, subj, mod, msg: msg + (rating!=='0' ? ` [Rating: ${rating}★]` : ''), date, status:'nou' });
+
+    fields.style.display = 'none';
+    ok.style.display = 'block';
+
+    if (document.getElementById('supp-requests-wrap').style.display !== 'none') renderTickets();
+  }
+
+  function sendTicketReply() {
+    const ta = document.getElementById('reply-textarea');
+    if (!ta.value.trim()) { ta.style.borderColor = '#dc2626'; return; }
+    TICKETS[activeTicket].status = 'rezolvat';
+    closeReply();
+    renderTickets();
+    const ok = document.getElementById('supp-reply-ok');
+    ok.style.display = 'flex';
+    setTimeout(() => ok.style.display = 'none', 2500);
+  }
+
+  // ── GLOBALS ──
+  let currentRole = null;
+
+  function showPanel(id, html) {
+    const p = document.getElementById(id);
+    p.innerHTML = html; p.style.display = 'block';
+    p.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+  function hidePanel(id) {
+    const p = document.getElementById(id);
+    p.style.display = 'none'; p.innerHTML = '';
+  }
+  function showToast(msg, type = 'green') {
+    const t = document.getElementById('mk-toast');
+    const ico = type === 'green' ? '✅' : type === 'red' ? '⚠️' : 'ℹ️';
+    t.className = `mk-alert mk-${type}`;
+    t.innerHTML = `<span class="mk-ico">${ico}</span><span class="mk-msg">${msg}</span>`;
+    t.style.display = 'flex';
+    clearTimeout(t._tmr);
+    t._tmr = setTimeout(() => t.style.display = 'none', 2600);
+  }
+
+  // ── ASIGURĂRI ──
+  const ASIG = [
+    { masina:'B-123-ABC', tip:'RCA',   comp:'Allianz',      nr:'RCA-2024-0012', exp:'19.05.2026', pret:'650',   status:'critica'  },
+    { masina:'B-456-DEF', tip:'CASCO', comp:'Generali',     nr:'CSC-2023-0456', exp:'15.07.2026', pret:'2.400', status:'activa'   },
+    { masina:'CJ-789-GHI',tip:'RCA',   comp:'NN Asigurări', nr:'RCA-2024-0089', exp:'01.03.2026', pret:'580',   status:'expirata' },
+    { masina:'IS-321-JKL',tip:'RCA',   comp:'Omniasig',     nr:'RCA-2025-0201', exp:'10.02.2027', pret:'720',   status:'activa'   },
+  ];
+  function renderAsig() {
+    const tbody = document.getElementById('asig-tbody'); if (!tbody) return;
+    const tipC = { RCA:'mb-blue', CASCO:'mb-purple' };
+    const stC  = { activa:'mb-green', critica:'mb-red', expirata:'mb-red' };
+    const stL  = { activa:'✓ Activă', critica:'⚠ Critică', expirata:'✗ Expirată' };
+    tbody.innerHTML = ASIG.map((r, i) => `<tr>
+      <td><strong>${r.masina}</strong></td>
+      <td><span class="mk-badge ${tipC[r.tip]||'mb-slate'}">${r.tip}</span></td>
+      <td>${r.comp}</td><td>${r.nr}</td>
+      <td${r.status!=='activa'?' style="color:#dc2626;font-weight:600"':''}>${r.exp}</td>
+      <td>${r.pret} RON</td>
+      <td><span class="mk-badge ${stC[r.status]}">${stL[r.status]}</span></td>
+      <td style="white-space:nowrap">
+        <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="showToast('📄 Poliță ${r.nr} descărcată!')">📄 PDF</button>
+        ${currentRole==='admin'?`<button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="asigForm(${i})">✏️</button>`:''}
+      </td></tr>`).join('');
+  }
+  function asigForm(idx) {
+    const r = idx >= 0 ? ASIG[idx] : {};
+    const title = idx >= 0 ? `✏️ Editează — ${r.nr}` : '＋ Adaugă poliță nouă';
+    const opt = m => ['B-123-ABC','B-456-DEF','CJ-789-GHI','IS-321-JKL'].map(v=>`<option${r.masina===v?' selected':''}>${v}</option>`).join('');
+    showPanel('asig-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>${title}</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('asig-panel')">✕</button></div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Mașina</label><select id="ai-masina" class="mk-select">${opt()}</select></div>
+        <div class="mk-field"><label>Tip</label><select id="ai-tip" class="mk-select">
+          <option${r.tip==='RCA'?' selected':''}>RCA</option><option${r.tip==='CASCO'?' selected':''}>CASCO</option>
+        </select></div>
+        <div class="mk-field"><label>Companie</label><input id="ai-comp" class="mk-input" value="${r.comp||''}" placeholder="ex. Allianz"/></div>
+        <div class="mk-field"><label>Nr. poliță</label><input id="ai-nr" class="mk-input" value="${r.nr||''}" placeholder="ex. RCA-2026-0100"/></div>
+        <div class="mk-field"><label>Dată expirare</label><input id="ai-exp" class="mk-input" value="${r.exp||''}" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field"><label>Preț (RON)</label><input id="ai-pret" class="mk-input" value="${r.pret||''}" placeholder="ex. 750"/></div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('asig-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="asigSave(${idx})">💾 Salvează</button>
+      </div></div>`);
+  }
+  function asigSave(idx) {
+    const masina = document.getElementById('ai-masina').value;
+    const tip    = document.getElementById('ai-tip').value;
+    const comp   = document.getElementById('ai-comp').value.trim();
+    const nr     = document.getElementById('ai-nr').value.trim();
+    const exp    = document.getElementById('ai-exp').value.trim();
+    const pret   = document.getElementById('ai-pret').value.trim();
+    if (!comp||!nr||!exp||!pret) { showToast('Completează toate câmpurile.','red'); return; }
+    const row = { masina, tip, comp, nr, exp, pret, status:'activa' };
+    if (idx===-1) ASIG.push(row); else ASIG[idx] = row;
+    renderAsig(); hidePanel('asig-panel'); showToast(`Poliță ${nr} salvată!`);
+  }
+
+  // ── VINIETE ──
+  const VINIETE = [
+    { masina:'B-123-ABC',  tara:'🇷🇴 România', tip:'Anuală',       dela:'01.01.2026', exp:'17.05.2026', cost:'47 RON',    status:'critica'  },
+    { masina:'B-456-DEF',  tara:'🇷🇴 România', tip:'Anuală',       dela:'01.01.2026', exp:'31.12.2026', cost:'47 RON',    status:'valida'   },
+    { masina:'B-456-DEF',  tara:'🇦🇹 Austria', tip:'10 zile',      dela:'05.05.2026', exp:'15.05.2026', cost:'8,70 EUR',  status:'expirata' },
+    { masina:'CJ-789-GHI', tara:'🇷🇴 România', tip:'Trimestrială', dela:'01.04.2026', exp:'30.06.2026', cost:'27 RON',    status:'valida'   },
+  ];
+  function renderViniete() {
+    const tbody = document.getElementById('viniete-tbody'); if (!tbody) return;
+    const stC = { valida:'mb-green', critica:'mb-red', expirata:'mb-amber' };
+    const stL = { valida:'✓ Validă', critica:'⚠ Expiră curând', expirata:'⚠ Expirată' };
+    tbody.innerHTML = VINIETE.map(r => `<tr>
+      <td><strong>${r.masina}</strong></td>
+      <td>${r.tara}</td><td>${r.tip}</td><td>${r.dela}</td>
+      <td${r.status!=='valida'?' style="color:#dc2626;font-weight:600"':''}>${r.exp}</td>
+      <td>${r.cost}</td>
+      <td><span class="mk-badge ${stC[r.status]}">${stL[r.status]}</span></td>
+    </tr>`).join('');
+  }
+  function vinieteForm() {
+    showPanel('viniete-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>＋ Adaugă rovinieta nouă</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('viniete-panel')">✕</button></div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Mașina</label><select id="vi-masina" class="mk-select">
+          <option>B-123-ABC</option><option>B-456-DEF</option><option>CJ-789-GHI</option><option>IS-321-JKL</option>
+        </select></div>
+        <div class="mk-field"><label>Țară</label><select id="vi-tara" class="mk-select">
+          <option>🇷🇴 România</option><option>🇦🇹 Austria</option><option>🇭🇺 Ungaria</option><option>🇧🇬 Bulgaria</option><option>🇩🇪 Germania</option>
+        </select></div>
+        <div class="mk-field"><label>Tip</label><select id="vi-tip" class="mk-select">
+          <option>Anuală</option><option>Trimestrială</option><option>Lunară</option><option>10 zile</option><option>7 zile</option>
+        </select></div>
+        <div class="mk-field"><label>Cost</label><input id="vi-cost" class="mk-input" placeholder="ex. 47 RON"/></div>
+        <div class="mk-field"><label>Valabilă de la</label><input id="vi-dela" class="mk-input" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field"><label>Dată expirare</label><input id="vi-exp" class="mk-input" placeholder="dd.mm.yyyy"/></div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('viniete-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="vineteSave()">💾 Salvează</button>
+      </div></div>`);
+  }
+  function vineteSave() {
+    const masina = document.getElementById('vi-masina').value;
+    const tara   = document.getElementById('vi-tara').value;
+    const tip    = document.getElementById('vi-tip').value;
+    const cost   = document.getElementById('vi-cost').value.trim();
+    const dela   = document.getElementById('vi-dela').value.trim();
+    const exp    = document.getElementById('vi-exp').value.trim();
+    if (!cost||!dela||!exp) { showToast('Completează toate câmpurile.','red'); return; }
+    VINIETE.push({ masina, tara, tip, dela, exp, cost, status:'valida' });
+    renderViniete(); hidePanel('viniete-panel'); showToast(`Rovinieta ${tara} pentru ${masina} salvată!`);
+  }
+
+  // ── ITP ──
+  const ITP_DATA = [
+    { masina:'B-123-ABC',  model:'Dacia Duster',   statie:'AutoTest Cluj',      data:'14.05.2025', val:'12', exp:'14.05.2026', cost:'180', status:'curind'  },
+    { masina:'CJ-456-DEF', model:'Ford Transit',   statie:'RAR Cluj',           data:'22.05.2025', val:'12', exp:'22.05.2026', cost:'220', status:'critica'  },
+    { masina:'B-456-DEF',  model:'VW Golf',        statie:'AutoTest București', data:'10.11.2025', val:'12', exp:'10.11.2026', cost:'165', status:'valabil'  },
+    { masina:'CJ-789-GHI', model:'Renault Megane', statie:'RAR București',      data:'03.02.2025', val:'12', exp:'03.02.2026', cost:'175', status:'expirat'  },
+    { masina:'IS-321-JKL', model:'Toyota Yaris',   statie:'AutoPro Iași',       data:'08.09.2025', val:'24', exp:'08.09.2027', cost:'190', status:'valabil'  },
+  ];
+  function renderItp() {
+    const tbody = document.getElementById('itp-tbody'); if (!tbody) return;
+    const stC = { valabil:'mb-green', curind:'mb-amber', critica:'mb-red', expirat:'mb-red' };
+    const stL = { valabil:'✓ Valabil', curind:'⚠ Expiră curând', critica:'⚠ Critică', expirat:'✗ Expirat' };
+    tbody.innerHTML = ITP_DATA.map((r, i) => `<tr>
+      <td><strong>${r.masina}</strong><br><span style="color:#94a3b8;font-size:10px">${r.model}</span></td>
+      <td>${r.statie}</td><td>${r.data}</td><td>${r.val} luni</td>
+      <td${r.status==='critica'||r.status==='expirat'?' style="color:#dc2626;font-weight:600"':''}>${r.exp}</td>
+      <td>${r.cost} RON</td>
+      <td><span class="mk-badge ${stC[r.status]}">${stL[r.status]}</span></td>
+      <td>${currentRole==='admin'?`<button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="itpForm(${i})">✏️</button>`:''}</td>
+    </tr>`).join('');
+  }
+  const ITP_MASINI = ['B-123-ABC — Dacia Duster','CJ-456-DEF — Ford Transit','B-456-DEF — VW Golf','CJ-789-GHI — Renault Megane','IS-321-JKL — Toyota Yaris'];
+  const ITP_MODEL  = {'B-123-ABC':'Dacia Duster','CJ-456-DEF':'Ford Transit','B-456-DEF':'VW Golf','CJ-789-GHI':'Renault Megane','IS-321-JKL':'Toyota Yaris'};
+  function itpForm(idx) {
+    const r = idx >= 0 ? ITP_DATA[idx] : {};
+    const title = idx >= 0 ? `✏️ Editează ITP — ${r.masina}` : '＋ Adaugă ITP nou';
+    const opts = ITP_MASINI.map(v => `<option${r.masina===v.split(' — ')[0]?' selected':''}>${v}</option>`).join('');
+    showPanel('itp-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>${title}</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('itp-panel')">✕</button></div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Mașina</label><select id="it-masina" class="mk-select">${opts}</select></div>
+        <div class="mk-field"><label>Stație ITP</label><input id="it-statie" class="mk-input" value="${r.statie||''}" placeholder="ex. RAR Cluj"/></div>
+        <div class="mk-field"><label>Data efectuării</label><input id="it-data" class="mk-input" value="${r.data||''}" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field"><label>Valabilitate</label><select id="it-val" class="mk-select">
+          <option${r.val==='12'?' selected':''} value="12">12 luni</option>
+          <option${r.val==='24'?' selected':''} value="24">24 luni</option>
+        </select></div>
+        <div class="mk-field"><label>Dată expirare</label><input id="it-exp" class="mk-input" value="${r.exp||''}" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field"><label>Cost (RON)</label><input id="it-cost" class="mk-input" value="${r.cost||''}" placeholder="ex. 180"/></div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('itp-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="itpSave(${idx})">💾 Salvează</button>
+      </div></div>`);
+  }
+  function itpSave(idx) {
+    const masina = document.getElementById('it-masina').value.split(' — ')[0];
+    const statie = document.getElementById('it-statie').value.trim();
+    const data   = document.getElementById('it-data').value.trim();
+    const val    = document.getElementById('it-val').value;
+    const exp    = document.getElementById('it-exp').value.trim();
+    const cost   = document.getElementById('it-cost').value.trim();
+    if (!statie||!data||!exp||!cost) { showToast('Completează toate câmpurile.','red'); return; }
+    const row = { masina, model:ITP_MODEL[masina]||'', statie, data, val, exp, cost, status:'valabil' };
+    if (idx===-1) ITP_DATA.push(row); else ITP_DATA[idx] = row;
+    renderItp(); hidePanel('itp-panel'); showToast(`ITP pentru ${masina} salvat!`);
+  }
+
+  // ── SERVICE ──
+  function srvCalcTotal() {
+    let total = 0;
+    document.querySelectorAll('#srv-rows .srv-row').forEach(row => {
+      const cant = parseFloat(row.querySelector('.srv-cant').value.replace(',','.')) || 0;
+      const pret = parseFloat(row.querySelector('.srv-pret').value.replace(',','.')) || 0;
+      const t = cant * pret;
+      row.querySelector('.srv-total').value = t.toFixed(2).replace('.',',');
+      total += t;
+    });
+    document.getElementById('srv-total-val').textContent = total.toFixed(2).replace('.',',') + ' RON';
+  }
+  function srvAddRow() {
+    const d = document.createElement('div');
+    d.className = 'mk-piese-row srv-row';
+    d.innerHTML = `
+      <input class="mk-input srv-den"   placeholder="Denumire piesă"/>
+      <input class="mk-input srv-cant"  placeholder="1"    oninput="srvCalcTotal()"/>
+      <input class="mk-input srv-pret"  placeholder="0,00" oninput="srvCalcTotal()"/>
+      <input class="mk-input srv-total" placeholder="0,00" readonly style="color:#1d4ed8;font-weight:600"/>
+      <button class="mk-btn mk-btn-red mk-btn-sm" onclick="this.closest('.srv-row').remove();srvCalcTotal()">✕</button>`;
+    document.getElementById('srv-rows').appendChild(d);
+  }
+  function srvSave() {
+    const masina = document.querySelector('#ms-service select').value.split(' — ')[0];
+    const total  = document.getElementById('srv-total-val').textContent;
+    showToast(`✅ Intervenție salvată — ${masina} · ${total}`);
+  }
+  function srvReset() {
+    document.querySelectorAll('#ms-service input[type=text], #ms-service .mk-input:not(.srv-total)').forEach(el => el.value = '');
+    showToast('Formular resetat.','amber');
+  }
+
+  // ── ANVELOPE ──
+  function anvForm(type) {
+    const isSchimb = type === 'schimb';
+    const title = isSchimb ? '🔄 Înregistrează schimb anvelope' : '＋ Adaugă set anvelope nou';
+    const body  = isSchimb ? `
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Mașina</label><select class="mk-select"><option>B-123-ABC — Dacia Duster</option><option>B-456-DEF — VW Golf</option><option>CJ-789-GHI — Renault Megane</option></select></div>
+        <div class="mk-field"><label>Km actuali</label><input class="mk-input" placeholder="ex. 45.200"/></div>
+        <div class="mk-field"><label>Set de montat</label><select class="mk-select"><option>Michelin Primacy 4 (vară)</option><option>Bridgestone Blizzak (iarnă)</option><option>Goodyear Vector 4S (all-season)</option></select></div>
+        <div class="mk-field"><label>Set de demontat</label><select class="mk-select"><option>Bridgestone Blizzak (iarnă)</option><option>Michelin Primacy 4 (vară)</option><option>Goodyear Vector 4S (all-season)</option></select></div>
+        <div class="mk-field"><label>Data schimbului</label><input class="mk-input" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field"><label>Efectuat de</label><input class="mk-input" placeholder="ex. AutoExpert SRL"/></div>
+      </div>` : `
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Mașina</label><select class="mk-select"><option>B-123-ABC — Dacia Duster</option><option>B-456-DEF — VW Golf</option><option>CJ-789-GHI — Renault Megane</option></select></div>
+        <div class="mk-field"><label>Marcă / Model</label><input class="mk-input" placeholder="ex. Michelin Primacy 4"/></div>
+        <div class="mk-field"><label>Dimensiune</label><input class="mk-input" placeholder="ex. 205/55 R16"/></div>
+        <div class="mk-field"><label>Sezon</label><select class="mk-select"><option>Vară</option><option>Iarnă</option><option>All-Season</option></select></div>
+        <div class="mk-field"><label>Tip set</label><select class="mk-select"><option>Anvelope</option><option>Roți complete (jante + anvelope)</option></select></div>
+        <div class="mk-field"><label>Număr bucăți</label><input class="mk-input" value="4"/></div>
+      </div>`;
+    showPanel('anv-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>${title}</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('anv-panel')">✕</button></div>
+      ${body}
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('anv-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="hidePanel('anv-panel');showToast('${isSchimb?'Schimb înregistrat cu succes!':'Set anvelope adăugat!'}')">${isSchimb?'💾 Înregistrează':'💾 Adaugă set'}</button>
+      </div></div>`);
+  }
+
+  // ── MAȘINI ──
+  const MASINI = [
+    { nr:'B-123-ABC',  marca:'Dacia',   model:'Duster',   an:'2021', motor:'1.500 cmc', combustibil:'Diesel', locuri:'5', km:'45.200', proprietar:'Ion Popescu'      },
+    { nr:'B-456-DEF',  marca:'VW',      model:'Golf VII', an:'2019', motor:'1.600 cmc', combustibil:'Diesel', locuri:'5', km:'87.400', proprietar:'Maria Ionescu'    },
+    { nr:'CJ-789-GHI', marca:'Renault', model:'Megane',   an:'2020', motor:'1.500 cmc', combustibil:'Diesel', locuri:'5', km:'62.100', proprietar:'SC TechCorp SRL' },
+    { nr:'IS-321-JKL', marca:'Toyota',  model:'Yaris',    an:'2022', motor:'1.500 cmc', combustibil:'Hibrid', locuri:'5', km:'18.900', proprietar:'Alexandru Popa'  },
+  ];
+  function renderMasini() {
+    const tbody = document.getElementById('masini-tbody'); if (!tbody) return;
+    const sub = document.getElementById('masini-sub');
+    if (sub) sub.textContent = `${MASINI.length} mașin${MASINI.length===1?'ă':'i'} înregistrat${MASINI.length===1?'ă':'e'}`;
+    tbody.innerHTML = MASINI.map((r, i) => `<tr>
+      <td><strong>${r.nr}</strong></td>
+      <td>${r.marca} ${r.model}<br><span style="color:#94a3b8;font-size:10px">${r.motor} · ${r.combustibil} · ${r.locuri} locuri</span></td>
+      <td>${r.an}</td><td>${r.motor}</td>
+      <td>${r.km} km</td>
+      <td>${r.proprietar}</td>
+      <td style="white-space:nowrap">
+        <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="masiniVezi(${i})">👁 Vezi</button>
+        ${currentRole==='admin'?`<button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="masiniForm(${i})">✏️</button>`:''}
+      </td></tr>`).join('');
+  }
+  function masiniVezi(idx) {
+    const r = MASINI[idx];
+    const asig = ASIG.filter(a => a.masina === r.nr);
+    const itp  = ITP_DATA.filter(t => t.masina === r.nr);
+    const sof  = SOFERI.filter(s => s.masini.includes(r.nr));
+    const asigHtml = asig.length
+      ? asig.map(a=>`<div style="margin-bottom:4px">🛡️ ${a.tip} · ${a.comp} · exp. <strong>${a.exp}</strong> · ${a.pret} RON</div>`).join('')
+      : '<span style="color:#94a3b8;font-size:12px">Fără asigurare</span>';
+    const itpHtml = itp.length
+      ? itp.map(t=>`<div>🔍 ITP · exp. <strong>${t.exp}</strong> · ${t.statie}</div>`).join('')
+      : '<span style="color:#94a3b8;font-size:12px">Fără ITP</span>';
+    const sofHtml = sof.length
+      ? sof.map(s=>`<div>👤 ${s.nume} · 📞 ${s.tel} · Permis ${s.permis}</div>`).join('')
+      : '<span style="color:#94a3b8;font-size:12px">Niciun șofer asociat</span>';
+    showPanel('masini-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head">
+        <span>🚗 ${r.nr} — ${r.marca} ${r.model}</span>
+        <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('masini-panel')">✕</button>
+      </div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:16px;font-size:13px">
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Specificații</div>
+          <div>Marcă / Model: <strong>${r.marca} ${r.model}</strong></div>
+          <div>An fabricație: <strong>${r.an}</strong></div>
+          <div>Motor: <strong>${r.motor} · ${r.combustibil}</strong></div>
+          <div>Locuri: <strong>${r.locuri}</strong></div>
+          <div>Km actuali: <strong>${r.km} km</strong></div>
+          <div>Proprietar: <strong>${r.proprietar}</strong></div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:8px;color:#1e293b">Asigurări</div>
+          ${asigHtml}
+          <div style="font-weight:600;margin:12px 0 8px;color:#1e293b">ITP</div>
+          ${itpHtml}
+          <div style="font-weight:600;margin:12px 0 8px;color:#1e293b">Șoferi</div>
+          ${sofHtml}
+        </div>
+      </div>
+      ${currentRole==='admin'?`<div style="padding:0 14px 14px;display:flex;justify-content:flex-end">
+        <button class="mk-btn mk-btn-blue mk-btn-sm" onclick="masiniForm(${idx})">✏️ Editează</button>
+      </div>`:''}
+    </div>`);
+  }
+  function masiniForm(idx) {
+    const r = idx >= 0 ? MASINI[idx] : {};
+    const title = idx >= 0 ? `✏️ Editează — ${r.nr}` : '＋ Adaugă mașină nouă';
+    showPanel('masini-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>${title}</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('masini-panel')">✕</button></div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Nr. înmatriculare</label><input id="mi-nr" class="mk-input" value="${r.nr||''}" placeholder="ex. B-000-XYZ"/></div>
+        <div class="mk-field"><label>Marcă</label><input id="mi-marca" class="mk-input" value="${r.marca||''}" placeholder="ex. Dacia"/></div>
+        <div class="mk-field"><label>Model</label><input id="mi-model" class="mk-input" value="${r.model||''}" placeholder="ex. Duster"/></div>
+        <div class="mk-field"><label>An fabricație</label><input id="mi-an" class="mk-input" value="${r.an||''}" placeholder="ex. 2022"/></div>
+        <div class="mk-field"><label>Motor (cmc)</label><input id="mi-motor" class="mk-input" value="${r.motor||''}" placeholder="ex. 1.500 cmc"/></div>
+        <div class="mk-field"><label>Combustibil</label><select id="mi-comb" class="mk-select">
+          <option${r.combustibil==='Benzina'?' selected':''}>Benzina</option>
+          <option${r.combustibil==='Diesel'?' selected':''}>Diesel</option>
+          <option${r.combustibil==='Hibrid'?' selected':''}>Hibrid</option>
+          <option${r.combustibil==='Electric'?' selected':''}>Electric</option>
+        </select></div>
+        <div class="mk-field"><label>Nr. locuri</label><input id="mi-locuri" class="mk-input" value="${r.locuri||'5'}" placeholder="5"/></div>
+        <div class="mk-field"><label>Km actuali</label><input id="mi-km" class="mk-input" value="${r.km||''}" placeholder="ex. 45.000"/></div>
+        <div class="mk-field" style="grid-column:1/-1"><label>Proprietar</label><input id="mi-prop" class="mk-input" value="${r.proprietar||''}" placeholder="ex. Ion Popescu"/></div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('masini-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="masiniSave(${idx})">💾 Salvează</button>
+      </div></div>`);
+  }
+  function masiniSave(idx) {
+    const nr        = document.getElementById('mi-nr').value.trim().toUpperCase();
+    const marca     = document.getElementById('mi-marca').value.trim();
+    const model     = document.getElementById('mi-model').value.trim();
+    const an        = document.getElementById('mi-an').value.trim();
+    const motor     = document.getElementById('mi-motor').value.trim();
+    const combustibil = document.getElementById('mi-comb').value;
+    const locuri    = document.getElementById('mi-locuri').value.trim();
+    const km        = document.getElementById('mi-km').value.trim();
+    const proprietar= document.getElementById('mi-prop').value.trim();
+    if (!nr||!marca||!model||!an||!motor||!km||!proprietar) { showToast('Completează toate câmpurile.','red'); return; }
+    const row = { nr, marca, model, an, motor, combustibil, locuri, km, proprietar };
+    if (idx===-1) MASINI.push(row); else MASINI[idx] = row;
+    renderMasini(); hidePanel('masini-panel');
+    showToast(`Mașina ${nr} salvată!`);
+  }
+
+  // ── ȘOFERI ──
+  const SOFERI = [
+    { nume:'Ion Popescu',      tel:'0722 123 456', permis:'B',    exp:'11.06.2026', masini:['B-123-ABC'],            status:'curind'  },
+    { nume:'Mihai Constantin', tel:'0744 987 654', permis:'B, C', exp:'15.09.2028', masini:['B-456-DEF','CJ-789-GHI'], status:'valabil' },
+    { nume:'Elena Dumitrescu', tel:'0755 321 789', permis:'B',    exp:'20.03.2029', masini:['IS-321-JKL'],           status:'valabil' },
+  ];
+  function renderSoferi() {
+    const grid = document.getElementById('soferi-grid'); if (!grid) return;
+    const sub = document.getElementById('soferi-sub');
+    if (sub) sub.textContent = `${SOFERI.length} șofer${SOFERI.length===1?'':'i'} activ${SOFERI.length===1?'':'i'}`;
+    const stBadge = { valabil:'mb-green', curind:'mb-amber', expirat:'mb-red' };
+    grid.innerHTML = SOFERI.map((s, i) => {
+      const badge = s.status === 'curind' ? `<span class="mk-badge mb-amber">Expiră ${s.exp}</span>` : `<span class="mk-badge ${stBadge[s.status]}">${s.status==='valabil'?'Valabil':'Expirat'}</span>`;
+      return `<div class="mk-sofer-card" style="cursor:pointer" onclick="soferVezi(${i})">
+        <div class="s-avatar">👤</div>
+        <div class="s-name">${s.nume}</div>
+        <div class="s-info">📞 ${s.tel}</div>
+        <div class="s-info">Permis cat. ${s.permis} · ${badge}</div>
+        <div class="s-info" style="margin-top:4px">Mașini: ${s.masini.map(m=>`<strong>${m}</strong>`).join(', ')}</div>
+        ${currentRole==='admin'?`<div style="margin-top:10px;display:flex;gap:6px">
+          <button class="mk-btn mk-btn-ghost mk-btn-sm" style="flex:1" onclick="event.stopPropagation();soferForm(${i})">✏️ Editează</button>
+          <button class="mk-btn mk-btn-sm" style="flex:1;background:#fef2f2;color:#dc2626;border:1px solid #fecaca" onclick="event.stopPropagation();soferDel(${i})">🗑️</button>
+        </div>`:''}
+      </div>`;
+    }).join('');
+  }
+  function soferVezi(idx) {
+    const s = SOFERI[idx];
+    const badge = s.status === 'curind' ? `<span class="mk-badge mb-amber">Expiră curând (${s.exp})</span>`
+      : s.status === 'expirat' ? `<span class="mk-badge mb-red">Expirat (${s.exp})</span>`
+      : `<span class="mk-badge mb-green">Valabil până ${s.exp}</span>`;
+    showPanel('soferi-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head">
+        <span>👤 ${s.nume}</span>
+        <button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('soferi-panel')">✕</button>
+      </div>
+      <div style="padding:14px;font-size:13px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div>
+          <div style="font-weight:600;margin-bottom:8px">Date personale</div>
+          <div>Nume: <strong>${s.nume}</strong></div>
+          <div>Telefon: <strong>${s.tel}</strong></div>
+          <div>Categorie permis: <strong>${s.permis}</strong></div>
+          <div style="margin-top:4px">Permis: ${badge}</div>
+        </div>
+        <div>
+          <div style="font-weight:600;margin-bottom:8px">Mașini asociate</div>
+          ${s.masini.map(m => {
+            const car = MASINI.find(c => c.nr === m);
+            return car ? `<div>🚗 <strong>${car.nr}</strong> — ${car.marca} ${car.model} (${car.an})</div>` : `<div>🚗 ${m}</div>`;
+          }).join('')}
+        </div>
+      </div>
+      ${currentRole==='admin'?`<div style="padding:0 14px 14px;display:flex;justify-content:flex-end">
+        <button class="mk-btn mk-btn-blue mk-btn-sm" onclick="soferForm(${idx})">✏️ Editează</button>
+      </div>`:''}
+    </div>`);
+  }
+  function soferForm(idx) {
+    const s = idx >= 0 ? SOFERI[idx] : {};
+    const title = idx >= 0 ? `✏️ Editează — ${s.nume}` : '＋ Adaugă șofer nou';
+    const masiniOpts = MASINI.map(m => `<option value="${m.nr}"${s.masini&&s.masini.includes(m.nr)?' selected':''}>${m.nr} — ${m.marca} ${m.model}</option>`).join('');
+    showPanel('soferi-panel', `<div class="mk-table-wrap" style="margin-top:12px">
+      <div class="mk-table-head"><span>${title}</span><button class="mk-btn mk-btn-ghost mk-btn-sm" onclick="hidePanel('soferi-panel')">✕</button></div>
+      <div style="padding:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="mk-field"><label>Nume complet</label><input id="sf-nume" class="mk-input" value="${s.nume||''}" placeholder="ex. Ion Popescu"/></div>
+        <div class="mk-field"><label>Telefon</label><input id="sf-tel" class="mk-input" value="${s.tel||''}" placeholder="ex. 0722 000 000"/></div>
+        <div class="mk-field"><label>Categorie permis</label><input id="sf-perm" class="mk-input" value="${s.permis||''}" placeholder="ex. B sau B, C"/></div>
+        <div class="mk-field"><label>Dată expirare permis</label><input id="sf-exp" class="mk-input" value="${s.exp||''}" placeholder="dd.mm.yyyy"/></div>
+        <div class="mk-field" style="grid-column:1/-1"><label>Mașini asociate (Ctrl+click pentru mai multe)</label>
+          <select id="sf-masini" class="mk-select" multiple style="height:90px">${masiniOpts}</select>
+        </div>
+      </div>
+      <div style="padding:0 14px 14px;display:flex;justify-content:flex-end;gap:8px">
+        <button class="mk-btn mk-btn-ghost" onclick="hidePanel('soferi-panel')">Anulează</button>
+        <button class="mk-btn mk-btn-blue" onclick="soferSave(${idx})">💾 Salvează</button>
+      </div></div>`);
+  }
+  function soferSave(idx) {
+    const nume   = document.getElementById('sf-nume').value.trim();
+    const tel    = document.getElementById('sf-tel').value.trim();
+    const permis = document.getElementById('sf-perm').value.trim();
+    const exp    = document.getElementById('sf-exp').value.trim();
+    const selOpts = [...document.getElementById('sf-masini').selectedOptions].map(o => o.value);
+    if (!nume||!tel||!permis||!exp) { showToast('Completează toate câmpurile.','red'); return; }
+    const now = new Date(); const today = `${String(now.getDate()).padStart(2,'0')}.${String(now.getMonth()+1).padStart(2,'0')}.${now.getFullYear()}`;
+    const [d,m,y] = exp.split('.').map(Number);
+    const expDate = new Date(y, m-1, d);
+    const diff = Math.ceil((expDate - now) / 86400000);
+    const status = diff < 0 ? 'expirat' : diff <= 60 ? 'curind' : 'valabil';
+    const row = { nume, tel, permis, exp, masini: selOpts, status };
+    if (idx===-1) SOFERI.push(row); else SOFERI[idx] = row;
+    renderSoferi(); hidePanel('soferi-panel');
+    showToast(`Șofer ${nume} salvat!`);
+  }
+  function soferDel(idx) {
+    const s = SOFERI[idx];
+    SOFERI.splice(idx, 1);
+    renderSoferi(); hidePanel('soferi-panel');
+    showToast(`Șofer ${s.nume} șters.`, 'amber');
+  }
+
+  // ── INIT ──
+  renderAsig(); renderViniete(); renderItp(); renderMasini(); renderSoferi();
+
+  function setMockView(mode, btn) {
+    document.querySelectorAll('.mv-btn').forEach(b => b.classList.remove('mvon'));
+    btn.classList.add('mvon');
+    const c = document.querySelector('.mv-container');
+    c.className = 'mv-container mode-' + mode;
+  }
+</script>
+</body>
+</html>
