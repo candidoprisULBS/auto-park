@@ -492,9 +492,8 @@
   .auth-input, .auth-select {
     width: 100%; padding: 9px 11px;
     border: 1px solid rgba(255,255,255,.12); border-radius: 4px;
-    font-size: 14px; color: #FFFFFF; background: rgba(255,255,255,.06);
+    font-size: 14px; color: #FFFFFF; background: #16162a;
     font-family: var(--font-the-future);
-    color-scheme: dark;
   }
 
   .auth-input:focus-within, .auth-select:focus-within {
@@ -619,8 +618,7 @@
   .fb-input, .fb-select, .fb-textarea {
     width: 100%; padding: 10px 12px; border-radius: 4px;
     border: 1px solid rgba(255,255,255,.12); font-size: 14px;
-    color: #FFFFFF; background: rgba(255,255,255,.06);
-    color-scheme: dark;
+    color: #FFFFFF; background: #16162a;
     font-family: var(--font-the-future);
     transition: border-color .15s;
     outline: none;
@@ -841,7 +839,7 @@
 
   .ph-field { margin-bottom:10px; }
   .ph-field label { display:block; font-size:10px; font-weight:400; color:rgba(255,255,255,.4); margin-bottom:3px; text-transform:uppercase; }
-  .ph-input, .ph-select { width:100%; padding:8px 10px; border-radius:4px; border:1px solid rgba(255,255,255,.1); font-size:12px; background:rgba(255,255,255,.06); color:#FFFFFF; color-scheme:dark; }
+  .ph-input, .ph-select { width:100%; padding:8px 10px; border-radius:4px; border:1px solid rgba(255,255,255,.1); font-size:12px; background:#16162a; color:#FFFFFF; }
   .ph-row2 { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
   .ph-divider { height:1px; background:rgba(255,255,255,.06); margin:12px 0; }
 
@@ -1057,12 +1055,11 @@
   .mk-select {
     width: 100%; padding: 7px 10px; border-radius: 4px;
     border: 1px solid rgba(255,255,255,.1); font-size: 13px; color: #FFFFFF;
-    background: rgba(255,255,255,.06);
-    color-scheme: dark;
+    background: #16162a;
   }
   .mk-select option, .ph-select option, .fb-select option, .auth-select option {
-    background: #1e1e2e;
-    color: #ffffff;
+    background: #16162a !important;
+    color: #ffffff !important;
   }
 
   .mk-divider { height: 1px; background: rgba(255,255,255,.06); margin: 14px 0; }
@@ -2892,6 +2889,22 @@
             <button class="ph-btn-full" style="background:#475569" onclick="showToast('Schimb anvelope înregistrat!')"> Înregistrează schimb</button>
           </div>
 
+          <!-- ── VINIETE ── -->
+          <div class="mph-pane" id="mph-viniete">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+              <button class="mk-btn mk-btn-blue mk-btn-sm" onclick="mobileRole==='admin'?showToast('Formular adăugare rovinieta deschis.'):showToast('Doar adminul poate adăuga.','red')">＋ Adaugă</button>
+            </div>
+            <div id="mph-vin-list"></div>
+          </div>
+
+          <!-- ── ITP ── -->
+          <div class="mph-pane" id="mph-itp">
+            <div style="display:flex;justify-content:flex-end;margin-bottom:10px">
+              <button class="mk-btn mk-btn-blue mk-btn-sm" onclick="mobileRole==='admin'?showToast('Formular adăugare ITP deschis.'):showToast('Doar adminul poate adăuga.','red')">＋ Adaugă</button>
+            </div>
+            <div id="mph-itp-list"></div>
+          </div>
+
           <!-- ── SUPPORT ── -->
           <div class="mph-pane" id="mph-support">
             <div class="ph-section" style="margin-top:0"> Contact</div>
@@ -2997,6 +3010,19 @@
 
         </div><!-- /mph-main -->
 
+        <!-- more-menu sheet -->
+        <div id="mph-more-sheet" style="display:none;position:absolute;bottom:60px;left:0;right:0;background:#1c1c2e;border-top:1px solid rgba(255,255,255,.1);z-index:40;padding:8px 6px;">
+          <div onclick="mphShowFromMore('viniete')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:6px;cursor:pointer;font-size:13px;color:#FFFFFF;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">🛣️</span> Viniete
+          </div>
+          <div onclick="mphShowFromMore('itp')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:6px;cursor:pointer;font-size:13px;color:#FFFFFF;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px">🔍</span> ITP
+          </div>
+          <div onclick="mphShowFromMore('support')" style="display:flex;align-items:center;gap:10px;padding:11px 12px;border-radius:6px;cursor:pointer;font-size:13px;color:#FFFFFF;" onmouseover="this.style.background='rgba(255,255,255,.08)'" onmouseout="this.style.background='none'">
+            <span style="font-size:16px"></span> Support
+          </div>
+        </div>
+
         <!-- bottom-sheet overlay -->
         <div id="mph-overlay" onclick="hidePhSheet()"></div>
         <div id="mph-sheet">
@@ -3011,7 +3037,7 @@
           <div class="mph-navitem" onclick="mphShow('service',this)"><span class="mn-ico" style="font-size:16px"></span><span class="mn-lbl">Service</span></div>
           <div class="mph-navitem" onclick="mphShow('asigurari',this)"><span class="mn-ico" style="font-size:16px"></span><span class="mn-lbl">Asigurări</span></div>
           <div class="mph-navitem" onclick="mphShow('anvelope',this)"><span class="mn-ico" style="font-size:16px"></span><span class="mn-lbl">Anvelope</span></div>
-          <div class="mph-navitem" onclick="mphShow('support',this)"><span class="mn-ico" style="font-size:16px"></span><span class="mn-lbl">Support</span></div>
+          <div class="mph-navitem" id="mph-more-btn" onclick="mphShowMore(this)"><span class="mn-ico" style="font-size:16px">●●●</span><span class="mn-lbl">Mai mult</span></div>
         </div>
 
       </div><!-- /mph-screen -->
@@ -4261,9 +4287,63 @@
       (!list.length ? `<div style="text-align:center;color:rgba(255,255,255,.38);padding:16px;font-size:12px">Fără anvelope pentru această mașină</div>` : '');
   }
 
+  // ── PHONE MORE MENU ──
+  function mphShowMore(btn) {
+    const sheet = document.getElementById('mph-more-sheet');
+    const isOpen = sheet.style.display === 'block';
+    sheet.style.display = isOpen ? 'none' : 'block';
+    document.querySelectorAll('.mph-navitem').forEach(n => n.classList.remove('mn-on'));
+    if (!isOpen) btn.classList.add('mn-on');
+  }
+  function mphShowFromMore(id) {
+    document.getElementById('mph-more-sheet').style.display = 'none';
+    document.querySelectorAll('.mph-navitem').forEach(n => n.classList.remove('mn-on'));
+    document.getElementById('mph-more-btn').classList.add('mn-on');
+    document.querySelectorAll('.mph-pane').forEach(p => p.classList.remove('mph-on'));
+    document.getElementById('mph-' + id).classList.add('mph-on');
+  }
+
+  // ── PHONE VINIETE ──
+  function renderPhViniete() {
+    const el = document.getElementById('mph-vin-list'); if (!el) return;
+    const stBorder = { valida:'#16a34a', critica:'#dc2626', expirata:'#dc2626' };
+    const stBadge  = { valida:'mb-green', critica:'mb-red', expirata:'mb-amber' };
+    const stLabel  = { valida:' Validă', critica:' Expiră curând', expirata:' Expirată' };
+    el.innerHTML = VINIETE.map(r => `
+      <div class="ph-card" style="border-left:3px solid ${stBorder[r.status]}">
+        <div class="ph-card-head">
+          <div><div class="ph-card-title">${r.masina}</div><div class="ph-card-sub">${r.tara} · ${r.tip}</div></div>
+          <span class="mk-badge ${stBadge[r.status]}">${stLabel[r.status]}</span>
+        </div>
+        <div class="ph-card-row">
+          <span class="mk-badge mb-slate">Expiră ${r.exp}</span>
+          <span class="mk-badge mb-green">${r.cost}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  // ── PHONE ITP ──
+  function renderPhItp() {
+    const el = document.getElementById('mph-itp-list'); if (!el) return;
+    const stBorder = { valabil:'#16a34a', curind:'#FC4C02', critica:'#dc2626', expirat:'#dc2626' };
+    const stBadge  = { valabil:'mb-green', curind:'mb-amber', critica:'mb-red', expirat:'mb-red' };
+    const stLabel  = { valabil:' Valabil', curind:' Expiră curând', critica:' Critică', expirat:' Expirat' };
+    el.innerHTML = ITP_DATA.map(r => `
+      <div class="ph-card" style="border-left:3px solid ${stBorder[r.status]}">
+        <div class="ph-card-head">
+          <div><div class="ph-card-title">${r.masina}</div><div class="ph-card-sub">${r.model} · ${r.statie}</div></div>
+          <span class="mk-badge ${stBadge[r.status]}">${stLabel[r.status]}</span>
+        </div>
+        <div class="ph-card-row">
+          <span class="mk-badge mb-slate">Expiră ${r.exp}</span>
+          <span class="mk-badge mb-slate">${r.cost} RON</span>
+        </div>
+      </div>`).join('');
+  }
+
   // ── INIT ──
   renderAsig(); renderViniete(); renderItp(); renderMasini(); renderSoferi();
-  renderPhMasini(); renderPhAsig(); renderPhAnv();
+  renderPhMasini(); renderPhAsig(); renderPhAnv(); renderPhViniete(); renderPhItp();
   phSrvCalc();
 
   function setMockView(mode, btn) {
