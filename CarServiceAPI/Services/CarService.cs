@@ -116,7 +116,7 @@ namespace CarServiceAPI.Services
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ID", car.Id);
-                    command.Parameters.AddWithValue("@make", car.MakeId.HasValue ? (object)car.MakeId : DBNull.Value);
+                    command.Parameters.AddWithValue("@makeId", car.MakeId.HasValue ? (object)car.MakeId : DBNull.Value);
                     command.Parameters.AddWithValue("@model", car.Model ?? (object)DBNull.Value);
                     command.Parameters.AddWithValue("@year", car.Year == 0 ? (object)DBNull.Value : car.Year);
                     command.Parameters.AddWithValue("@type", car.Type ?? (object)DBNull.Value);
