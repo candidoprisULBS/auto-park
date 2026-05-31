@@ -1,3 +1,5 @@
+using CarServiceAPI.Models;
+using CarServiceAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CarServiceAPI.Controllers
@@ -6,54 +8,113 @@ namespace CarServiceAPI.Controllers
     [Route("api/service-entry-actions")]
     public class ServiceEntryActionsController : ControllerBase
     {
+        private readonly IServiceEntryActionsService _actionService;
+
+        public ServiceEntryActionsController(IServiceEntryActionsService actionService)
+        {
+            _actionService = actionService;
+        }
+
         /// <summary>
-        /// Create a new action
+        /// Create a new service entry action
         /// </summary>
         [HttpPost]
-        public IActionResult CreateAction([FromBody] CreateServiceEntryActionRequest request)
+        public async Task<IActionResult> CreateAction([FromBody] CreateServiceEntryActionRequest request)
         {
-            // Call sp_InsertServiceEntryActions stored procedure
-            return Ok(new { message = "Service entry action created successfully" });
+            try
+            {
+                var action = new ServiceEntryAction
+                {
+                    Id = request.Id,
+                    ServiceEntryId = request.ServiceEntryId,
+                    ServiceActionsId = request.ServiceActionsId
+                };
+
+                var result = await _actionService.CreateActionAsync(action);
+                return Ok(new { message = "Service entry action created successfully", rowsAffected = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         /// <summary>
-        /// Get all actions
+        /// Get all service entry actions
         /// </summary>
         [HttpGet]
-        public IActionResult GetAllActions()
+        public async Task<IActionResult> GetAllActions()
         {
-            // Call sp_GetServiceEntryActions stored procedure without ID parameter
-            return Ok();
+            try
+            {
+                var actions = await _actionService.GetAllActionsAsync();
+                return Ok(actions);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         /// <summary>
-        /// Get action by ID
+        /// Get service entry action by ID
         /// </summary>
         [HttpGet("{id}")]
-        public IActionResult GetActionById(Guid id)
+        public async Task<IActionResult> GetActionById(Guid id)
         {
-            // Call sp_GetServiceEntryActions stored procedure with ID parameter
-            return Ok();
+            try
+            {
+                var action = await _actionService.GetActionByIdAsync(id);
+                if (action == null)
+                    return NotFound(new { message = "Service entry action not found" });
+
+                return Ok(action);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         /// <summary>
-        /// Update action
+        /// Update a service entry action
         /// </summary>
         [HttpPut("{id}")]
-        public IActionResult UpdateAction(Guid id, [FromBody] UpdateServiceEntryActionRequest request)
+        public async Task<IActionResult> UpdateAction(Guid id, [FromBody] UpdateServiceEntryActionRequest request)
         {
-            // Call sp_UpdateServiceEntryActions stored procedure
-            return Ok(new { message = "Service entry action updated successfully" });
+            try
+            {
+                var action = new ServiceEntryAction
+                {
+                    Id = id,
+                    ServiceEntryId = request.ServiceEntryId ?? Guid.Empty,
+                    ServiceActionsId = request.ServiceActionsId ?? Guid.Empty
+                };
+
+                var result = await _actionService.UpdateActionAsync(id, action);
+                return Ok(new { message = "Service entry action updated successfully", rowsAffected = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
 
         /// <summary>
-        /// Delete action
+        /// Delete a service entry action
         /// </summary>
         [HttpDelete("{id}")]
-        public IActionResult DeleteAction(Guid id)
+        public async Task<IActionResult> DeleteAction(Guid id)
         {
-            // Call sp_DeleteServiceEntryActions stored procedure
-            return Ok(new { message = "Service entry action deleted successfully" });
+            try
+            {
+                var result = await _actionService.DeleteActionAsync(id);
+                return Ok(new { message = "Service entry action deleted successfully", rowsAffected = result });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
         }
     }
 

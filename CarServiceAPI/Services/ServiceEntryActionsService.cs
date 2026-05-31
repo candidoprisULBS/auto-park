@@ -4,20 +4,20 @@ using Microsoft.Data.SqlClient;
 
 namespace CarServiceAPI.Services
 {
-    public interface IServiceEntryService
+    public interface IServiceEntryActionsService
     {
-        Task<IEnumerable<ServiceEntry>> GetAllEntriesAsync();
-        Task<ServiceEntry> GetEntryByIdAsync(Guid id);
-        Task<int> CreateEntryAsync(ServiceEntry entry);
-        Task<int> UpdateEntryAsync(Guid id, ServiceEntry entry);
-        Task<int> DeleteEntryAsync(Guid id);
+        Task<IEnumerable<ServiceEntryAction>> GetAllActionsAsync();
+        Task<ServiceEntryAction> GetActionByIdAsync(Guid id);
+        Task<int> CreateActionAsync(ServiceEntryAction action);
+        Task<int> UpdateActionAsync(Guid id, ServiceEntryAction action);
+        Task<int> DeleteActionAsync(Guid id);
     }
 
-    public class ServiceEntryService : IServiceEntryService
+    public class ServiceEntryActionsService : IServiceEntryActionsService
     {
         private readonly IConfiguration _configuration;
 
-        public ServiceEntryService(IConfiguration configuration)
+        public ServiceEntryActionsService(IConfiguration configuration)
         {
             _configuration = configuration;
         }
@@ -29,15 +29,15 @@ namespace CarServiceAPI.Services
         }
 
         /// <summary>
-        /// Get all service entries from the database using sp_GetServiceEntry stored procedure
+        /// Get all service entry actions from the database using sp_GetServiceEntryActions stored procedure
         /// </summary>
-        public async Task<IEnumerable<ServiceEntry>> GetAllEntriesAsync()
+        public async Task<IEnumerable<ServiceEntryAction>> GetAllActionsAsync()
         {
-            var entries = new List<ServiceEntry>();
+            var actions = new List<ServiceEntryAction>();
 
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
-                using (SqlCommand command = new SqlCommand("sp_GetServiceEntry", connection))
+                using (SqlCommand command = new SqlCommand("sp_GetServiceEntryActions", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
 
@@ -46,32 +46,30 @@ namespace CarServiceAPI.Services
                     {
                         while (await reader.ReadAsync())
                         {
-                            entries.Add(new ServiceEntry
+                            actions.Add(new ServiceEntryAction
                             {
                                 Id = (Guid)reader["ID"],
-                                CarId = (Guid)reader["carID"],
-                                DriverId = (Guid)reader["driverID"],
-                                Mileage = (int)reader["mileage"],
-                                AccidentDetails = reader["accidentDetails"].ToString()
+                                ServiceEntryId = (Guid)reader["serviceEntryID"],
+                                ServiceActionsId = (Guid)reader["serviceActionsID"]
                             });
                         }
                     }
                 }
             }
 
-            return entries;
+            return actions;
         }
 
         /// <summary>
-        /// Get a specific service entry by ID using sp_GetServiceEntry stored procedure
+        /// Get a specific service entry action by ID using sp_GetServiceEntryActions stored procedure
         /// </summary>
-        public async Task<ServiceEntry> GetEntryByIdAsync(Guid id)
+        public async Task<ServiceEntryAction> GetActionByIdAsync(Guid id)
         {
-            ServiceEntry entry = null;
+            ServiceEntryAction action = null;
 
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
-                using (SqlCommand command = new SqlCommand("sp_GetServiceEntry", connection))
+                using (SqlCommand command = new SqlCommand("sp_GetServiceEntryActions", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ID", id);
@@ -81,37 +79,33 @@ namespace CarServiceAPI.Services
                     {
                         if (await reader.ReadAsync())
                         {
-                            entry = new ServiceEntry
+                            action = new ServiceEntryAction
                             {
                                 Id = (Guid)reader["ID"],
-                                CarId = (Guid)reader["carID"],
-                                DriverId = (Guid)reader["driverID"],
-                                Mileage = (int)reader["mileage"],
-                                AccidentDetails = reader["accidentDetails"].ToString()
+                                ServiceEntryId = (Guid)reader["serviceEntryID"],
+                                ServiceActionsId = (Guid)reader["serviceActionsID"]
                             };
                         }
                     }
                 }
             }
 
-            return entry;
+            return action;
         }
 
         /// <summary>
-        /// Create a new service entry using sp_InsertServiceEntry stored procedure
+        /// Create a new service entry action using sp_InsertServiceEntryActions stored procedure
         /// </summary>
-        public async Task<int> CreateEntryAsync(ServiceEntry entry)
+        public async Task<int> CreateActionAsync(ServiceEntryAction action)
         {
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
-                using (SqlCommand command = new SqlCommand("sp_InsertServiceEntry", connection))
+                using (SqlCommand command = new SqlCommand("sp_InsertServiceEntryActions", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
-                    command.Parameters.AddWithValue("@ID", entry.Id);
-                    command.Parameters.AddWithValue("@carID", entry.CarId);
-                    command.Parameters.AddWithValue("@driverID", entry.DriverId);
-                    command.Parameters.AddWithValue("@mileage", entry.Mileage);
-                    command.Parameters.AddWithValue("@accident", entry.AccidentDetails ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@ID", action.Id);
+                    command.Parameters.AddWithValue("@serviceEntryID", action.ServiceEntryId);
+                    command.Parameters.AddWithValue("@serviceActionsID", action.ServiceActionsId);
 
                     await connection.OpenAsync();
                     return await command.ExecuteNonQueryAsync();
@@ -120,20 +114,18 @@ namespace CarServiceAPI.Services
         }
 
         /// <summary>
-        /// Update an existing service entry using sp_UpdateServiceEntry stored procedure
+        /// Update an existing service entry action using sp_UpdateServiceEntryActions stored procedure
         /// </summary>
-        public async Task<int> UpdateEntryAsync(Guid id, ServiceEntry entry)
+        public async Task<int> UpdateActionAsync(Guid id, ServiceEntryAction action)
         {
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
-                using (SqlCommand command = new SqlCommand("sp_UpdateServiceEntry", connection))
+                using (SqlCommand command = new SqlCommand("sp_UpdateServiceEntryActions", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ID", id);
-                    command.Parameters.AddWithValue("@carID", entry.CarId);
-                    command.Parameters.AddWithValue("@driverID", entry.DriverId);
-                    command.Parameters.AddWithValue("@mileage", entry.Mileage);
-                    command.Parameters.AddWithValue("@accident", entry.AccidentDetails ?? (object)DBNull.Value);
+                    command.Parameters.AddWithValue("@serviceEntryID", action.ServiceEntryId == Guid.Empty ? (object)DBNull.Value : action.ServiceEntryId);
+                    command.Parameters.AddWithValue("@serviceActionsID", action.ServiceActionsId == Guid.Empty ? (object)DBNull.Value : action.ServiceActionsId);
 
                     await connection.OpenAsync();
                     return await command.ExecuteNonQueryAsync();
@@ -142,13 +134,13 @@ namespace CarServiceAPI.Services
         }
 
         /// <summary>
-        /// Delete a service entry using sp_DeleteServiceEntry stored procedure
+        /// Delete a service entry action using sp_DeleteServiceEntryActions stored procedure
         /// </summary>
-        public async Task<int> DeleteEntryAsync(Guid id)
+        public async Task<int> DeleteActionAsync(Guid id)
         {
             using (SqlConnection connection = new SqlConnection(GetConnectionString()))
             {
-                using (SqlCommand command = new SqlCommand("sp_DeleteServiceEntry", connection))
+                using (SqlCommand command = new SqlCommand("sp_DeleteServiceEntryActions", connection))
                 {
                     command.CommandType = CommandType.StoredProcedure;
                     command.Parameters.AddWithValue("@ID", id);

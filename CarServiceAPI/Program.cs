@@ -20,6 +20,7 @@ builder.Services.AddScoped<ICarService, CarService>();
 builder.Services.AddScoped<IDriverService, DriverService>();
 builder.Services.AddScoped<IDriverAlertService, DriverAlertService>();
 builder.Services.AddScoped<IServiceEntryService, ServiceEntryService>();
+builder.Services.AddScoped<IServiceEntryActionsService, ServiceEntryActionsService>();
 
 var app = builder.Build();
 

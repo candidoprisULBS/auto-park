@@ -29,7 +29,7 @@ namespace CarServiceAPI.Controllers
                     CarId = request.CarId,
                     DriverId = request.DriverId,
                     Mileage = request.Mileage,
-                    Accident = request.Accident
+                    AccidentDetails = request.AccidentDetails
                 };
 
                 var result = await _entryService.CreateEntryAsync(entry);
@@ -92,7 +92,7 @@ namespace CarServiceAPI.Controllers
                     CarId = request.CarId ?? Guid.Empty,
                     DriverId = request.DriverId ?? Guid.Empty,
                     Mileage = request.Mileage ?? 0,
-                    Accident = request.Accident
+                    AccidentDetails = request.AccidentDetails
                 };
 
                 var result = await _entryService.UpdateEntryAsync(id, entry);
@@ -128,7 +128,7 @@ namespace CarServiceAPI.Controllers
         public Guid CarId { get; set; }
         public Guid DriverId { get; set; }
         public int Mileage { get; set; }
-        public string Accident { get; set; }
+        public string AccidentDetails { get; set; }
     }
 
     public class UpdateServiceEntryRequest
@@ -136,6 +136,6 @@ namespace CarServiceAPI.Controllers
         public Guid? CarId { get; set; }
         public Guid? DriverId { get; set; }
         public int? Mileage { get; set; }
-        public string Accident { get; set; }
+        public string AccidentDetails { get; set; }
     }
 }

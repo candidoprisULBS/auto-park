@@ -6,6 +6,6 @@ namespace CarServiceAPI.Models
         public Guid CarId { get; set; }
         public Guid DriverId { get; set; }
         public int Mileage { get; set; }
-        public string Accident { get; set; }
+        public string AccidentDetails { get; set; }
     }
 }
