@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = 'https://localhost:7196/api';
 const API_ENDPOINTS = {
     CARS: `${API_BASE_URL}/cars`,
     DRIVERS: `${API_BASE_URL}/driver`,
@@ -35,7 +35,8 @@ function switchTab(tabName) {
     const tabElement = document.getElementById(tabName + '-tab');
     if (tabElement) {
         tabElement.classList.add('active');
-        event.target.classList.add('active');
+        const btn = document.querySelector('.tab-button[data-tab="' + tabName + '"]');
+        if (btn) btn.classList.add('active');
     }
 
     // Load data when switching tabs
@@ -480,7 +481,7 @@ document.getElementById('addServiceEntryForm').addEventListener('submit', async 
         carId: document.getElementById('entryCarId').value,
         driverId: document.getElementById('entryDriverId').value,
         mileage: parseInt(document.getElementById('entryMileage').value),
-        accident: document.getElementById('entryAccident').value || 'None'
+        accidentDetails: document.getElementById('entryAccident').value || 'None'
     };
 
     try {
@@ -520,7 +521,7 @@ async function loadAllServiceEntries() {
                 <td>${entry.carId.substring(0, 8)}</td>
                 <td>${entry.driverId.substring(0, 8)}</td>
                 <td>${entry.mileage}</td>
-                <td>${entry.accident}</td>
+                <td>${entry.accidentDetails}</td>
                 <td class="action-buttons">
                     <button class="btn btn-sm btn-edit" onclick="editServiceEntry('${entry.id}')">Edit</button>
                     <button class="btn btn-sm btn-delete" onclick="deleteServiceEntry('${entry.id}')">Delete</button>
@@ -557,7 +558,7 @@ async function editServiceEntry(entryId) {
             </div>
             <div class="form-group">
                 <label for="editEntryAccident">Accident:</label>
-                <textarea id="editEntryAccident" rows="3">${entry.accident}</textarea>
+                <textarea id="editEntryAccident" rows="3">${entry.accidentDetails}</textarea>
             </div>
             <button type="button" class="btn btn-primary" onclick="saveEditedServiceEntry()">Save Changes</button>
         `;
@@ -573,7 +574,7 @@ async function saveEditedServiceEntry() {
         carId: document.getElementById('editEntryCarId').value,
         driverId: document.getElementById('editEntryDriverId').value,
         mileage: parseInt(document.getElementById('editEntryMileage').value),
-        accident: document.getElementById('editEntryAccident').value || 'None'
+        accidentDetails: document.getElementById('editEntryAccident').value || 'None'
     };
 
     try {
