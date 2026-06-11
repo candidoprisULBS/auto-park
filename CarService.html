@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Service Management System</title>
+    <link rel="stylesheet" href="CarService.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🚗 Car Service Management System</h1>
+            <p>Manage Cars, Drivers, Service Entries & Alerts</p>
+        </header>
+
+        <!-- Navigation Tabs -->
+        <nav class="tabs-nav">
+            <button class="tab-button active" data-tab="cars">Cars</button>
+            <button class="tab-button" data-tab="drivers">Drivers</button>
+            <button class="tab-button" data-tab="service-entries">Service Entries</button>
+            <button class="tab-button" data-tab="driver-alerts">Driver Alerts</button>
+        </nav>
+
+        <!-- CARS TAB -->
+        <section id="cars-tab" class="tab-content active">
+            <div class="section-header">
+                <h2>Cars Management</h2>
+            </div>
+
+            <!-- Add Car Form -->
+            <div class="form-section">
+                <h3>Add New Car</h3>
+                <form id="addCarForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="carModel">Model:</label>
+                        <input type="text" id="carModel" placeholder="e.g., BMW 3 Series" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carYear">Year:</label>
+                        <input type="number" id="carYear" placeholder="e.g., 2023" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carType">Type:</label>
+                        <input type="text" id="carType" placeholder="e.g., Sedan" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carEngine">Engine:</label>
+                        <input type="text" id="carEngine" placeholder="e.g., 2.0L" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carLicencePlate">Licence Plate:</label>
+                        <input type="text" id="carLicencePlate" placeholder="e.g., AB-12-XYZ" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="carFirstReg">First Registration:</label>
+                        <input type="number" id="carFirstReg" placeholder="e.g., 2020" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Car</button>
+                </form>
+            </div>
+
+            <!-- Search Cars -->
+            <div class="search-section">
+                <h3>Search Cars</h3>
+                <div class="search-group">
+                    <input type="text" id="carSearchPlate" placeholder="Search by licence plate...">
+                    <button class="btn btn-secondary" onclick="searchCarsByPlate()">Search</button>
+                </div>
+            </div>
+
+            <!-- Cars Table -->
+            <div class="table-section">
+                <h3>All Cars</h3>
+                <div class="table-controls">
+                    <button class="btn btn-secondary" onclick="loadAllCars()">Refresh</button>
+                </div>
+                <table id="carsTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Model</th>
+                            <th>Year</th>
+                            <th>Type</th>
+                            <th>Engine</th>
+                            <th>Licence Plate</th>
+                            <th>First Reg</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="no-data">Loading cars...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- DRIVERS TAB -->
+        <section id="drivers-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Drivers Management</h2>
+            </div>
+
+            <!-- Add Driver Form -->
+            <div class="form-section">
+                <h3>Add New Driver</h3>
+                <form id="addDriverForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="driverFirstName">First Name:</label>
+                        <input type="text" id="driverFirstName" placeholder="John" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverLastName">Last Name:</label>
+                        <input type="text" id="driverLastName" placeholder="Doe" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverEmail">Email:</label>
+                        <input type="email" id="driverEmail" placeholder="john@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverPhone">Phone No:</label>
+                        <input type="tel" id="driverPhone" placeholder="+1234567890" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverAddress">Address:</label>
+                        <input type="text" id="driverAddress" placeholder="123 Main St" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverCity">City:</label>
+                        <input type="text" id="driverCity" placeholder="New York" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverZip">Zip Code:</label>
+                        <input type="text" id="driverZip" placeholder="10001" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="driverLicenceExp">Licence Expiration:</label>
+                        <input type="date" id="driverLicenceExp" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Driver</button>
+                </form>
+            </div>
+
+            <!-- Search Drivers -->
+            <div class="search-section">
+                <h3>Search Drivers</h3>
+                <div class="search-group">
+                    <input type="text" id="driverSearchFirst" placeholder="First Name...">
+                    <input type="text" id="driverSearchLast" placeholder="Last Name...">
+                    <input type="text" id="driverSearchEmail" placeholder="Email...">
+                    <input type="text" id="driverSearchPhone" placeholder="Phone...">
+                    <button class="btn btn-secondary" onclick="searchDrivers()">Search</button>
+                </div>
+            </div>
+
+            <!-- Drivers Table -->
+            <div class="table-section">
+                <h3>All Drivers</h3>
+                <div class="table-controls">
+                    <button class="btn btn-secondary" onclick="loadAllDrivers()">Refresh</button>
+                </div>
+                <table id="driversTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>First Name</th>
+                            <th>Last Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>City</th>
+                            <th>Licence Exp</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="7" class="no-data">Loading drivers...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SERVICE ENTRIES TAB -->
+        <section id="service-entries-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Service Entries Management</h2>
+            </div>
+
+            <!-- Add Service Entry Form -->
+            <div class="form-section">
+                <h3>Add New Service Entry</h3>
+                <form id="addServiceEntryForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="entryCarId">Car (ID):</label>
+                        <input type="text" id="entryCarId" placeholder="Paste Car ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryDriverId">Driver (ID):</label>
+                        <input type="text" id="entryDriverId" placeholder="Paste Driver ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryMileage">Mileage:</label>
+                        <input type="number" id="entryMileage" placeholder="e.g., 45000" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="entryAccident">Accident:</label>
+                        <textarea id="entryAccident" placeholder="Accident details or 'None'" rows="3"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Service Entry</button>
+                </form>
+            </div>
+
+            <!-- Service Entries Table -->
+            <div class="table-section">
+                <h3>All Service Entries</h3>
+                <div class="table-controls">
+                    <button class="btn btn-secondary" onclick="loadAllServiceEntries()">Refresh</button>
+                </div>
+                <table id="serviceEntriesTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Car ID</th>
+                            <th>Driver ID</th>
+                            <th>Mileage</th>
+                            <th>Accident</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="6" class="no-data">Loading service entries...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- DRIVER ALERTS TAB -->
+        <section id="driver-alerts-tab" class="tab-content">
+            <div class="section-header">
+                <h2>Driver Alerts Management</h2>
+            </div>
+
+            <!-- Add Driver Alert Form -->
+            <div class="form-section">
+                <h3>Add New Driver Alert</h3>
+                <form id="addAlertForm" class="form-grid">
+                    <div class="form-group">
+                        <label for="alertDriverId">Driver (ID):</label>
+                        <input type="text" id="alertDriverId" placeholder="Paste Driver ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alertTypeId">Alert Type (ID):</label>
+                        <input type="text" id="alertTypeId" placeholder="Paste Type ID" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="alertExpiration">Expiration:</label>
+                        <input type="date" id="alertExpiration" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Alert</button>
+                </form>
+            </div>
+
+            <!-- Driver Alerts Table -->
+            <div class="table-section">
+                <h3>All Driver Alerts</h3>
+                <div class="table-controls">
+                    <button class="btn btn-secondary" onclick="loadAllAlerts()">Refresh</button>
+                </div>
+                <table id="alertsTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Driver ID</th>
+                            <th>Type ID</th>
+                            <th>Expiration</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr><td colspan="5" class="no-data">Loading alerts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeEditModal()">&times;</span>
+                <h2>Edit Record</h2>
+                <form id="editForm"></form>
+            </div>
+        </div>
+
+        <!-- Notification -->
+        <div id="notification" class="notification"></div>
+    </div>
+
+    <script src="CarService.js"></script>
+</body>
+</html>
