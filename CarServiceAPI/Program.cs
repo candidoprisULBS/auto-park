@@ -22,6 +22,15 @@ builder.Services.AddScoped<IDriverAlertService, DriverAlertService>();
 builder.Services.AddScoped<IServiceEntryService, ServiceEntryService>();
 builder.Services.AddScoped<IServiceEntryActionsService, ServiceEntryActionsService>();
 
+// Allow the front-end (opened from file:// or a local web server) to call the API
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -42,6 +51,8 @@ app.UseSwaggerUI(c =>
 
 
 app.UseHttpsRedirection();
+
+app.UseCors();
 
 app.UseAuthorization();
 
